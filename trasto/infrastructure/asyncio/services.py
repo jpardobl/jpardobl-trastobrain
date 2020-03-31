@@ -2,14 +2,17 @@ import asyncio
 import json
 import traceback
 
-from trasto.infrastructure.asyncio.repositories import (
-    ResultadoAccionRepository, TareaRepository)
-from trasto.infrastructure.memory.repositories import (EstadoDeHumorRepository,
-                                                       LoggerRepository,
-                                                       ComandoRepository)
-from trasto.model.entities import (Accion, CodigoResultado,
-                                   ResultadoAccion, Tarea)
-from trasto.model.commands import ComandoNuevaTarea
+
+from trasto.infrastructure.memory.repositories import LoggerRepository
+from trasto.model.entities import (
+    Accion, 
+    CodigoResultado,
+    ResultadoAccion, 
+    Tarea,
+    TareaRepositoryInterface, 
+    ResultadoAccionRepositoryInterface,
+    EstadoHumorRepositoryInterface)
+from trasto.model.commands import ComandoNuevaTarea, ComandoRepositoryInterface
 
 from trasto.model.service_comander import ComanderInterface
 from trasto.model.service_ejecutor import EjecutorInterface
@@ -22,11 +25,11 @@ class CommandNotImplemented(Exception):
 
 
 class Sensor(SensorInterface):
-    def __init__(self, humor_repo: EstadoDeHumorRepository):
+    def __init__(self, humor_repo: EstadoHumorRepositoryInterface):
         self.logger = LoggerRepository('sensor')
         self.humor_repo = humor_repo
 
-    def listen_to_task_result(self, repo_resultado: ResultadoAccionRepository):
+    def listen_to_task_result(self, repo_resultado: ResultadoAccionRepositoryInterface):
         try:
             self.logger.debug("Escuchando a resultado de tarea")
             for tarea in repo_resultado.next_resultado():
@@ -38,7 +41,7 @@ class Sensor(SensorInterface):
             traceback.print_exc()
 
 
-    def update_humor_from_task_result(self, resultado: ResultadoAccion, humor_repo: EstadoDeHumorRepository):
+    def update_humor_from_task_result(self, resultado: ResultadoAccion, humor_repo: EstadoHumorRepositoryInterface):
         try:
             humor_repo.mejora() if resultado.is_good() else humor_repo.empeora()
             self.logger.debug("el humor ha cambiado a : {}".format(humor_repo.que_tal()))
@@ -51,7 +54,7 @@ class Ejecutor(EjecutorInterface):
     def __init__(self):
         self.logger = LoggerRepository('ejecutor')
 
-    def listen_for_next_tarea(self, tarea_repo: TareaRepository, resultado_repo: ResultadoAccionRepository):
+    def listen_for_next_tarea(self, tarea_repo: TareaRepositoryInterface, resultado_repo: ResultadoAccionRepositoryInterface):
         try:
             self.logger.debug("Escuchando por nueva tarea")
             for tarea in tarea_repo.next_tarea():
@@ -62,7 +65,7 @@ class Ejecutor(EjecutorInterface):
             traceback.print_exc()
 
 
-    def ejecuta_tarea(self, tarea: Tarea, resultado_repo: ResultadoAccionRepository): 
+    def ejecuta_tarea(self, tarea: Tarea, resultado_repo: ResultadoAccionRepositoryInterface): 
         accion = tarea.accion
         self.logger.debug(f"Ejecutamos: {accion.nombre}")
         resultado_repo.send_resultado(
@@ -76,12 +79,12 @@ class Comander(ComanderInterface):
     def __init__(self):
         self.logger = LoggerRepository('comander')
 
-    def enqueue_task(self, tarea: Tarea, tarea_repo: TareaRepository):
+    def enqueue_task(self, tarea: Tarea, tarea_repo: TareaRepositoryInterface):
         self.logger.debug(f"encolando tarea {tarea}")
         tarea_repo.append(tarea)
 
-    def listen_to_command(self, repo_command: ComandoRepository, tarea_repo: TareaRepository):
-
+    def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface):
+        self.logger.debug("Escuchando por nuevo comando")
         try:
             for cmd in repo_command.next_comando():
                 print(cmd)
@@ -100,11 +103,11 @@ async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor
     try:
 
         loop = asyncio.get_event_loop()
-        blocking_tasks = [
-            loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, resultado_repo),
-            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
-            loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
-        ]
+        blocking_tasks = {
+            "sensor": loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, resultado_repo),
+            "ejecutor": loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
+            "comander": loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
+        }
         logger.debug("Preparados los threads")
         return blocking_tasks
     except asyncio.CancelledError:

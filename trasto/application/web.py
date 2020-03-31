@@ -1,6 +1,31 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from aiohttp import web
+
+from trasto.infrastructure.asyncio.repositories import (
+    ResultadoAccionRepository, 
+    TareaRepository,
+    ComandoRepository)
+from trasto.infrastructure.memory.repositories import EstadoDeHumorRepository
+
+from trasto.infrastructure.asyncio.services import brain
+
+
+async def get_service(request):
+
+    return web.json_response({
+        "service": "trastobrain", 
+    })
+
+
+async def new_task(request):
+    comando_repo = ComandoRepository()
+    
+    return web.json_response({
+        "msg": "solicitud recibida",
+        "request": request
+    })
 
 
 class ScraperServer:
@@ -15,60 +40,46 @@ class ScraperServer:
 
     async def start_background_tasks(self, app):
 
-        t_executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=int(config.args.connect_thread_max_workers) + 2 # Para permitir el monitor y la persistencia de estado
+        t_executor = ThreadPoolExecutor(
+            max_workers=10
         )
+        humor_repo = EstadoDeHumorRepository()
+        tarea_repo = TareaRepository()
+        resultado_repo = ResultadoAccionRepository()
+        comando_repo = ComandoRepository()
+        
+        threads = await brain(
+            thread_executor=t_executor,
+            resultado_repo=resultado_repo,
+            tarea_repo=tarea_repo,
+            comando_repo=comando_repo,
+            humor_repo=humor_repo)
+        #completed, pending = await asyncio.wait(threads)
+        for name, t in threads.items():
+            app[name] = self.loop.create_task(t)
 
-        app['manager'] = self.loop.create_task(manager(t_executor))
 
     async def cleanup_background_tasks(self, app):
-        app['manager'].cancel()
-        for _, data in connectors.items():
-            data['tasks'][0].cancel()
-        for t in asyncio.Task.all_tasks():
-            t.cancel()
-        await app['manager']
+        app['brain'].cancel()
+        await app['brain']
+
 
     async def create_app(self):
         app = web.Application()
         app.router.add_get('/', get_service)
-        
-        app.router.add_get('/connectors', get_connectors)
-        app.router.add_get('/offsets', get_offsets)
-        app.router.add_get('/connectors/{name}/status', get_connector_status)
-        app.router.add_get('/connectors/{name}', get_connector_status)
-        app.router.add_get('/connectors/{name}/tasks/0/status', get_task_status)
-        app.router.add_get('/connectors/{name}/tasks/1/status', get_task_status)
-        
-        """
-        POST /connectors
-        {
-            
-            "name": "nombre del connector",
-            "config": {
-                
-                "sistema": "Sistema que origina los datos a ingestar",
-                "datalake": "Datalake donde se deben dejar los datos",
-                "estructura": "nombre de la estructura de datos. Asi se vera en el datadictionary",
-                "conector": {
-                    ["nombre_funcion": {params}]                     
-                }                
-                "funciones": ["lista de funciones a ejecutar"]
-            }
-        }
-        """
-        app.router.add_post('/connectors', new_connector)        
-        app.router.add_delete('/connectors/{name}', delete_connector)        
-        app.router.add_post('/connectors/{name}/tasks/0/restart', restart_task)
-        app.router.add_post('/connectors/{name}/restart', restart_task)        
-
+        app.router.add_post('/task', new_task)      
         return app
 
-    def run_app(self):
 
+    def run_app(self):
         loop = self.loop
         app = loop.run_until_complete(self.create_app())
         app.on_startup.append(self.start_background_tasks)
         app.on_cleanup.append(self.cleanup_background_tasks)
         web.run_app(app, host=self.host, port=self.port)
         # TODO gestionar el apagado y liberado de recursos
+
+if __name__ == '__main__':
+    
+    s = ScraperServer(host='localhost', port=8080)
+    s.run_app()

@@ -44,7 +44,7 @@ class EstadoHumorRepositoryInterface:
         pass
 
         
-class ResultadoAccionRepositoryInterace:
+class ResultadoAccionRepositoryInterface:
     def next_resultado(self) -> Tarea:
         pass
 

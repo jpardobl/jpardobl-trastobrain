@@ -3,9 +3,11 @@ from queue import Empty, Full, PriorityQueue, Queue
 
 from trasto.infrastructure.memory.repositories import LoggerRepository
 from trasto.model.entities import (Prioridad,
-                                   ResultadoAccionRepositoryInterace, Tarea,
+                                   ResultadoAccionRepositoryInterface, Tarea,
                                    TareaRepositoryInterface)
 from trasto.model.value_entities import ResultadoAccion                                   
+from trasto.model.commands import ComandoRepositoryInterface
+
 
 QUEUE_TIMEOUT = 10
 
@@ -39,7 +41,7 @@ class TareaRepository(TareaRepositoryInterface):
     
 
 
-class ResultadoAccionRepository(ResultadoAccionRepositoryInterace):
+class ResultadoAccionRepository(ResultadoAccionRepositoryInterface):
     def __init__(self):
         self.logger = LoggerRepository('resultados_accion_repo')
 
@@ -57,5 +59,23 @@ class ResultadoAccionRepository(ResultadoAccionRepositoryInterace):
             resultados_accion.put(tarea)
         except Full:
             self.logger.crit("Cola resultado accion llena!!!!")
+
+
+class ComandoRepository(ComandoRepositoryInterface):
+    def __init__(self):
+        self.logger = LoggerRepository('comando_repo')
+
+    def next_comando(self):
+        while True:
+            try:
+                yield comandos.get(block=True, timeout=QUEUE_TIMEOUT)
+            except Empty:
+                pass
+
+    def send_comando(self, comando):
+        try:
+            comandos.put(comando)
+        except Full:
+            self.logger.crit("Cola de comandos llena!!!!")
 
 
