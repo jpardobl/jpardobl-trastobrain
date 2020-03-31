@@ -1,6 +1,6 @@
 
 from queue import Empty, Full, PriorityQueue, Queue
-
+from asyncio import Queue, QueueEmpty, QueueFull
 from trasto.infrastructure.memory.repositories import LoggerRepository
 from trasto.model.entities import (Prioridad,
                                    ResultadoAccionRepositoryInterface, Tarea,
@@ -65,14 +65,14 @@ class ComandoRepository(ComandoRepositoryInterface):
     def __init__(self):
         self.logger = LoggerRepository('comando_repo')
 
-    def next_comando(self):
+    async def next_comando(self):
         while True:
             try:
                 yield comandos.get(block=True, timeout=QUEUE_TIMEOUT)
             except Empty:
                 pass
 
-    def send_comando(self, comando):
+    async def send_comando(self, comando):
         try:
             comandos.put(comando)
         except Full:

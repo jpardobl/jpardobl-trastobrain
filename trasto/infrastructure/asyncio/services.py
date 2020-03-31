@@ -103,11 +103,11 @@ async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor
     try:
 
         loop = asyncio.get_event_loop()
-        blocking_tasks = {
-            "sensor": loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, resultado_repo),
-            "ejecutor": loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
-            "comander": loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
-        }
+        blocking_tasks = [
+            loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, resultado_repo),
+            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
+            loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
+        ]
         logger.debug("Preparados los threads")
         return blocking_tasks
     except asyncio.CancelledError:
