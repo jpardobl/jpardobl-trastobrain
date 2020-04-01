@@ -1,6 +1,8 @@
 
 from queue import Empty, Full, PriorityQueue, Queue
-from asyncio import Queue, QueueEmpty, QueueFull
+
+from trasto.infrastructure.asyncio import QueueMorph
+
 from trasto.infrastructure.memory.repositories import LoggerRepository
 from trasto.model.entities import (Prioridad,
                                    ResultadoAccionRepositoryInterface, Tarea,
@@ -12,8 +14,7 @@ from trasto.model.commands import ComandoRepositoryInterface
 QUEUE_TIMEOUT = 10
 
 tareas = PriorityQueue(maxsize=10)
-comandos = Queue()
-
+comandos = QueueMorph()
 tareas_para_ejecutar = Queue()
 resultados_accion = Queue()
 
@@ -65,17 +66,18 @@ class ComandoRepository(ComandoRepositoryInterface):
     def __init__(self):
         self.logger = LoggerRepository('comando_repo')
 
-    async def next_comando(self):
+    def next_comando(self):
         while True:
             try:
-                yield comandos.get(block=True, timeout=QUEUE_TIMEOUT)
+                self.logger.debug("Esperamos por nuevo comando")
+                return comandos.get()
             except Empty:
                 pass
 
     async def send_comando(self, comando):
-        try:
-            comandos.put(comando)
-        except Full:
-            self.logger.crit("Cola de comandos llena!!!!")
+        await comandos.aput(comando)
+        self.logger.debug("Comando enviado")
+        
+        
 
 

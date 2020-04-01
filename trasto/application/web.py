@@ -7,10 +7,11 @@ from trasto.infrastructure.asyncio.repositories import (
     ResultadoAccionRepository, 
     TareaRepository,
     ComandoRepository)
-from trasto.model.commands import Comando
+from trasto.model.commands import ComandoNuevaTarea
 from trasto.model.entities import Tarea
-from trasto.model.value_entities import Idd, Idefier
-from trasto.infrastructure.memory.repositories import EstadoDeHumorRepository
+from trasto.model.value_entities import Idd
+
+from trasto.infrastructure.memory.repositories import EstadoDeHumorRepository, Idefier
 
 from trasto.infrastructure.asyncio.services import brain
 
@@ -26,10 +27,11 @@ async def new_task(request):
     comando_repo = ComandoRepository()
     r = await request.json()
 
-    comando_repo.send_comando(
-        Comando(
+    await comando_repo.send_comando(
+        ComandoNuevaTarea(
             idd=Idd(Idefier()),
             tarea=Tarea(
+                Idd(Idefier()),
                 nombre=r['nombre'],
                 accion=r['accion'],
                 prioridad=r['prioridad']

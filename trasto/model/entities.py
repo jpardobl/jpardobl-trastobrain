@@ -8,11 +8,13 @@ from trasto.model.value_entities import (TipoAccion,
 
 class Accion:
     def __init__(self, idd: Idd, nombre: str, script: str, tipo: TipoAccion):
-        self.id = idd
+        self.idd = idd
         self.nombre = nombre
         self.script = script
         self.tipo = tipo
 
+    def __str__(self):
+        return f"Accion[nombre={self.nombre};tipo={self.tipo}]"
 
 class Tarea:
     def __init__(self, idd: Idd, nombre: str, accion: Accion, prioridad: Prioridad, **parametros: dict):
@@ -24,7 +26,7 @@ class Tarea:
         self.resultado = None
 
     def __str__(self):
-        return f"Tarea[{self.nombre}]"
+        return f"Tarea[{self.nombre}], accion: {self.accion}"
 
     def __cmp__(self, other):
         return cmp(self.prioridad, other.prioridad)

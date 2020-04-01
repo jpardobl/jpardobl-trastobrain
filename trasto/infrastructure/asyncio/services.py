@@ -66,8 +66,9 @@ class Ejecutor(EjecutorInterface):
 
 
     def ejecuta_tarea(self, tarea: Tarea, resultado_repo: ResultadoAccionRepositoryInterface): 
+        print(tarea)
         accion = tarea.accion
-        self.logger.debug(f"Ejecutamos: {accion.nombre}")
+        self.logger.debug(f"Ejecutamos: {accion}")
         resultado_repo.send_resultado(
             tarea=tarea,
             resultado=ResultadoAccion( 
@@ -85,17 +86,18 @@ class Comander(ComanderInterface):
 
     def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface):
         self.logger.debug("Escuchando por nuevo comando")
-        try:
-            for cmd in repo_command.next_comando():
+        while True:
+            try:
+                cmd = repo_command.next_comando()
                 print(cmd)
                 if isinstance(cmd, ComandoNuevaTarea):
-                    self.enqueue_task(cmd, tarea_repo)
+                    self.enqueue_task(cmd.tarea, tarea_repo)
                     continue
                 raise CommandNotImplemented(cmd)
 
-        except Exception as ex:
-            self.logger.error(ex)
-            traceback.print_exc()
+            except Exception as ex:
+                self.logger.error(ex)
+                traceback.print_exc()
         
 
 async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor_repo):
@@ -108,6 +110,7 @@ async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor
             loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
             loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
         ]
+        
         logger.debug("Preparados los threads")
         return blocking_tasks
     except asyncio.CancelledError:
