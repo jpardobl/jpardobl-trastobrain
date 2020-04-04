@@ -4,8 +4,7 @@ import uuid
 
 from trasto.model.commands import ComandoNuevaTarea, ComandoRepositoryInterface
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
-                                   EstadoHumorRepositoryInterface, Idd,
-                                   TipoAccion, Tarea, Accion)
+                                   EstadoHumorRepositoryInterface, Idd, Tarea)
 from trasto.model.commands import ComandoRepositoryInterface
 from trasto.model.value_entities import CambioHumor, IdefierInterface, Prioridad
 
@@ -13,10 +12,6 @@ HUMOR_INICIAL = 0
 
 DEFAULT_LOG_LEVEL = logging.DEBUG
 
-acciones = list()
-
-class AccionNotFoundException(Exception):
-    pass
 
 class LoggerRepository:
 
@@ -74,23 +69,6 @@ class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
         return f"{self.humor}"
 
 
-class AccionRepository(AccionRepositoryInterface):
-
-    def get_action_by_type(self, tipo: TipoAccion):
-        for accion in acciones:
-            if accion.tipo == tipo:
-                yield accion
-
-
-    def get_accion_by_id(self, idd):
-        for accion in acciones:
-            if accion.idd == idd:
-                return accion
-        raise AccionNotFoundException(f"idd={idd}")
-
-
-    def append_accion(self, accion: Accion):
-        acciones.append(accion)
 
 
 class ComandoRepository(ComandoRepositoryInterface):

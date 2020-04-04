@@ -6,7 +6,8 @@ from aiohttp import web
 from trasto.infrastructure.asyncio.repositories import (
     ResultadoAccionRepository, 
     TareaRepository,
-    ComandoRepository)
+    ComandoRepository,
+    AccionRepository)
 from trasto.model.commands import ComandoNuevaTarea, ComandoNuevaAccion
 from trasto.model.entities import Tarea, Accion, TipoAccion
 from trasto.model.value_entities import Idd
@@ -43,6 +44,7 @@ async def new_task(request):
         "request": r
     })
 
+
 async def new_accion(request):
     comando_repo = ComandoRepository()
     r = await request.json()
@@ -63,7 +65,7 @@ async def new_accion(request):
 async def get_all_acciones(request):
     pass
 
-    
+
 class ScraperServer:
 
     def __init__(self, host, port, loop=None):
@@ -83,14 +85,15 @@ class ScraperServer:
         tarea_repo = TareaRepository()
         resultado_repo = ResultadoAccionRepository()
         comando_repo = ComandoRepository()
-
+        accion_repo = AccionRepository()
 
         app['brain'] = self.loop.create_task(brain(
             thread_executor=t_executor,
             resultado_repo=resultado_repo,
             tarea_repo=tarea_repo,
             comando_repo=comando_repo,
-            humor_repo=humor_repo))
+            humor_repo=humor_repo,
+            accion_repo=accion_repo))
 
     async def cleanup_background_tasks(self, app):
         app['brain'].cancel()

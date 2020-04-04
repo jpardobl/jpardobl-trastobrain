@@ -67,6 +67,8 @@ class AccionRepositoryInterface:
     def get_accion_by_id(self, idd: Idd) -> Accion:
         pass
     
+    def del_accion(self, accion: Accion) -> bool:
+        pass
 
 class TareaRepositoryInterface:
     def next_tarea(self) -> Tarea:

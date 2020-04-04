@@ -2,19 +2,16 @@ import asyncio
 import json
 import traceback
 
-
 from trasto.infrastructure.memory.repositories import LoggerRepository
-from trasto.model.entities import (
-    Accion, 
-    CodigoResultado,
-    ResultadoAccion, 
-    Tarea,
-    TareaRepositoryInterface, 
-    ResultadoAccionRepositoryInterface,
-    EstadoHumorRepositoryInterface,
-    AccionRepositoryInterface)
-from trasto.model.commands import ComandoNuevaTarea, ComandoNuevaAccion, ComandoRepositoryInterface
-
+from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
+                                   ComandoRepositoryInterface)
+from trasto.model.entities import (Accion, AccionRepositoryInterface,
+                                   CodigoResultado,
+                                   EstadoHumorRepositoryInterface,
+                                   ResultadoAccion,
+                                   ResultadoAccionRepositoryInterface, Tarea,
+                                   TareaRepositoryInterface)
+from trasto.model.events import Evento, EventRepositoryInterface
 from trasto.model.service_comander import ComanderInterface
 from trasto.model.service_ejecutor import EjecutorInterface
 from trasto.model.service_sensor import SensorInterface
@@ -104,7 +101,7 @@ class Comander(ComanderInterface):
                 traceback.print_exc()
         
 
-async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor_repo):
+async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor_repo, accion_repo):
     logger = LoggerRepository('brain')
     try:
 
@@ -112,7 +109,7 @@ async def brain(thread_executor, resultado_repo, tarea_repo, comando_repo, humor
         blocking_tasks = [
             loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, resultado_repo),
             loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, resultado_repo),
-            loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo)
+            loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo, accion_repo)
         ]
         
         logger.debug("Preparados los threads")
