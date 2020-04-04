@@ -15,6 +15,8 @@ DEFAULT_LOG_LEVEL = logging.DEBUG
 
 acciones = list()
 
+class AccionNotFoundException(Exception):
+    pass
 
 class LoggerRepository:
 
@@ -78,6 +80,13 @@ class AccionRepository(AccionRepositoryInterface):
         for accion in acciones:
             if accion.tipo == tipo:
                 yield accion
+
+
+    def get_accion_by_id(self, idd):
+        for accion in acciones:
+            if accion.idd == idd:
+                return accion
+        raise AccionNotFoundException(f"idd={idd}")
 
 
     def append_accion(self, accion: Accion):

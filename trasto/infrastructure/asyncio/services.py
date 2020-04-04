@@ -11,8 +11,9 @@ from trasto.model.entities import (
     Tarea,
     TareaRepositoryInterface, 
     ResultadoAccionRepositoryInterface,
-    EstadoHumorRepositoryInterface)
-from trasto.model.commands import ComandoNuevaTarea, ComandoRepositoryInterface
+    EstadoHumorRepositoryInterface,
+    AccionRepositoryInterface)
+from trasto.model.commands import ComandoNuevaTarea, ComandoNuevaAccion, ComandoRepositoryInterface
 
 from trasto.model.service_comander import ComanderInterface
 from trasto.model.service_ejecutor import EjecutorInterface
@@ -84,7 +85,7 @@ class Comander(ComanderInterface):
         self.logger.debug(f"encolando tarea {tarea}")
         tarea_repo.append(tarea)
 
-    def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface):
+    def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface, accion_repo: AccionRepositoryInterface):
         self.logger.debug("Escuchando por nuevo comando")
         while True:
             try:
@@ -92,6 +93,9 @@ class Comander(ComanderInterface):
                 print(cmd)
                 if isinstance(cmd, ComandoNuevaTarea):
                     self.enqueue_task(cmd.tarea, tarea_repo)
+                    continue
+                if isinstance(cmd, ComandoNuevaAccion):
+                    accion_repo.append(cmd.accion)
                     continue
                 raise CommandNotImplemented(cmd)
 

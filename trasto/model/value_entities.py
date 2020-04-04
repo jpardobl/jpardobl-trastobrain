@@ -24,6 +24,7 @@ class Idd:
         return f"{self.id}"
 
 
+
 class CambioHumor:
     HUMOR_MEJORA = 1
     HUMOR_EMPEORA = -1

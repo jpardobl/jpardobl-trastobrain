@@ -7,8 +7,8 @@ from trasto.infrastructure.asyncio.repositories import (
     ResultadoAccionRepository, 
     TareaRepository,
     ComandoRepository)
-from trasto.model.commands import ComandoNuevaTarea
-from trasto.model.entities import Tarea
+from trasto.model.commands import ComandoNuevaTarea, ComandoNuevaAccion
+from trasto.model.entities import Tarea, Accion, TipoAccion
 from trasto.model.value_entities import Idd
 
 from trasto.infrastructure.memory.repositories import EstadoDeHumorRepository, Idefier
@@ -43,7 +43,27 @@ async def new_task(request):
         "request": r
     })
 
+async def new_accion(request):
+    comando_repo = ComandoRepository()
+    r = await request.json()
+    
+    await comando_repo.send_comando(
+        ComandoNuevaAccion(
+            idd=Idd(Idefier()),
+            accion=Accion(
+                idd=Idd(Idefier()),
+                nombre=r['nombre'],
+                script_url=r['script_url'],
+                tipo=TipoAccion(r['tipo'])
+            )
+        )
+    )
 
+
+async def get_all_acciones(request):
+    pass
+
+    
 class ScraperServer:
 
     def __init__(self, host, port, loop=None):
@@ -80,7 +100,9 @@ class ScraperServer:
     async def create_app(self):
         app = web.Application()
         app.router.add_get('/', get_service)
-        app.router.add_post('/task', new_task)      
+        app.router.add_post('/task', new_task)
+        app.router.add_post('/accion', new_accion)
+        app.router.add_get('/acciones', get_all_acciones)
         return app
 
 

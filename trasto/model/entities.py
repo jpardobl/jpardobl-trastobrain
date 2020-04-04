@@ -7,10 +7,10 @@ from trasto.model.value_entities import (TipoAccion,
 #OBJECTS
 
 class Accion:
-    def __init__(self, idd: Idd, nombre: str, script: str, tipo: TipoAccion):
+    def __init__(self, idd: Idd, nombre: str, script_url: str, tipo: TipoAccion):
         self.idd = idd
         self.nombre = nombre
-        self.script = script
+        self.script_url = script_url
         self.tipo = tipo
 
     def __str__(self):
@@ -58,7 +58,13 @@ class AccionRepositoryInterface:
     def append(self, accion: Accion) -> None:
         pass
     
-    def get_action_by_type(self, tipo: TipoAccion) -> Accion:
+    def emit_event_creada_accion(self, accion: Accion) -> bool:
+        pass
+    
+    def get_accion_by_type(self, tipo: TipoAccion) -> tuple:
+        pass
+
+    def get_accion_by_id(self, idd: Idd) -> Accion:
         pass
     
 
