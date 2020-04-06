@@ -1,10 +1,11 @@
-from trasto.model.entities import ResultadoAccionRepositoryInterface, EstadoHumorRepositoryInterface
+from trasto.model.entities import EstadoHumorRepositoryInterface
 from trasto.model.value_entities import ResultadoAccion
+from trasto.model.events import EventRepositoryInterface
 
 
 class SensorInterface:
 
-    def listen_to_task_result(self, repo_resultado: ResultadoAccionRepositoryInterface) -> None:
+    def listen_to_task_result(self, evento_repo: EventRepositoryInterface) -> None:
         pass
 
 

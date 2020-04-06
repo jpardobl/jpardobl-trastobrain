@@ -1,19 +1,37 @@
 
 
 from trasto.model.entities import Accion
-from trasto.model.value_entities import Idd, IdefierInterface
+from trasto.model.value_entities import Idd, IdefierInterface, ResultadoAccion
 
 
 class Evento:
-    pass
+    def __init__(self, idd:IdefierInterface):
+        self._idd = idd
+    
+    @property
+    def idd(self):
+        return self._idd
 
-
-class CreadaNuevaAccion(Evento):
+class NuevaAccionCreada(Evento):
     def __init__(self, idd: IdefierInterface, accion_idd: IdefierInterface, accion_nombre: str):
-        self.idd = idd
-        self.accion_idd = accion_idd
-        self.accion_nombre = accion_nombre
+        super().__init__(idd)
+        self._accion_idd = accion_idd
+        self._accion_nombre = accion_nombre
 
+
+class AccionTerminada(Evento):
+    def __init__(self, idd: IdefierInterface, tarea_idd: IdefierInterface, resultado: ResultadoAccion):
+        super().__init__(idd)
+        self._tarea_idd = tarea_idd
+        self._resultado = resultado
+
+    @property
+    def tarea_idd(self):
+        return self._tarea_idd
+
+    @property
+    def resultado(self):
+        return self._resultado
 
 class EventRepositoryInterface:
     def pub_event(self, evento: Evento) -> bool:

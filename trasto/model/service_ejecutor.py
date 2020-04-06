@@ -1,5 +1,7 @@
-from trasto.model.entities import TareaRepositoryInterface, EstadoHumorRepositoryInterface, ResultadoAccionRepositoryInterface
+from trasto.model.entities import TareaRepositoryInterface, EstadoHumorRepositoryInterface
 from trasto.model.entities import Tarea
+from trasto.model.events import EventRepositoryInterface
+
 
 class EjecutorInterface:
 
@@ -9,5 +11,5 @@ class EjecutorInterface:
     def listen_for_next_tarea(self, tarea_repo: TareaRepositoryInterface) -> Tarea:
         pass
 
-    def ejecuta_tarea(self, tarea: Tarea,  resultado_repo: ResultadoAccionRepositoryInterface) -> None:
+    def ejecuta_tarea(self, tarea: Tarea,  evento_repo: EventRepositoryInterface) -> None:
         pass

@@ -18,21 +18,17 @@ class Accion:
 
 class Tarea:
     def __init__(self, idd: Idd, nombre: str, accion: Accion, prioridad: Prioridad, **parametros: dict):
-        self.id = idd
+        self.idd = idd
         self.nombre = nombre
         self.accion = accion
         self.parametros = parametros
         self.prioridad = prioridad
-        self.resultado = None
 
     def __str__(self):
         return f"Tarea[{self.nombre}], accion: {self.accion}"
 
     def __cmp__(self, other):
         return cmp(self.prioridad, other.prioridad)
-
-    def set_resultado(self, resultado: ResultadoAccion):
-        self.resultado = resultado
 
 
 class EstadoHumorRepositoryInterface:
@@ -45,14 +41,6 @@ class EstadoHumorRepositoryInterface:
     def que_tal(self):
         pass
 
-        
-class ResultadoAccionRepositoryInterface:
-    def next_resultado(self) -> Tarea:
-        pass
-
-    def send_resultado(self, tarea: Tarea, resultado: ResultadoAccion):
-        pass
-
 
 class AccionRepositoryInterface:
     def append(self, accion: Accion) -> None:
@@ -60,7 +48,10 @@ class AccionRepositoryInterface:
     
     def emit_event_creada_accion(self, accion: Accion) -> bool:
         pass
-    
+
+    def get_all(self) -> tuple:
+        pass
+
     def get_accion_by_type(self, tipo: TipoAccion) -> tuple:
         pass
 
@@ -69,6 +60,8 @@ class AccionRepositoryInterface:
     
     def del_accion(self, accion: Accion) -> bool:
         pass
+
+        
 
 class TareaRepositoryInterface:
     def next_tarea(self) -> Tarea:

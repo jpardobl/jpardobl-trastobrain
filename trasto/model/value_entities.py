@@ -49,20 +49,32 @@ class CodigoResultado:
     def __eq__(self, other):
         return self.codigo == other.codigo
 
+    def __str__(self):
+        return "bueno" if self.codigo == self.BUEN_RESULTADO else "MALO"
+
 
 class ResultadoAccion:
     def __init__(self, codigo: CodigoResultado, msg: str):
-        self.codigo = codigo
-        self.msg = msg
+        print(type(codigo))
+        self._codigo = codigo
+        self._msg = msg
+
+    @property
+    def codigo(self):
+        return self._codigo
+
+    @property
+    def msg(self):
+        return self._msg
 
     def is_good(self):
-        return self.codigo == CodigoResultado(CodigoResultado.BUEN_RESULTADO)
+        return self._codigo == CodigoResultado(CodigoResultado.BUEN_RESULTADO)
 
     def __repr__(self):
         return "{self}"
 
     def __str__(self):
-        return f"Resultado[codigo: : {self.codigo}; msg: {self.msg}"
+        return f"Resultado[codigo: : {self._codigo}; msg: {self._msg}"
 
 class TipoAccion:
 

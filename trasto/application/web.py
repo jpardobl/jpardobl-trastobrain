@@ -4,18 +4,16 @@ from concurrent.futures import ThreadPoolExecutor
 from aiohttp import web
 
 from trasto.infrastructure.asyncio.repositories import (
-    ResultadoAccionRepository, 
-    TareaRepository,
-    ComandoRepository,
-    AccionRepository)
-from trasto.model.commands import ComandoNuevaTarea, ComandoNuevaAccion
-from trasto.model.entities import Tarea, Accion, TipoAccion
+    AccionRepository, ComandoRepository, EventoRepository,
+    TareaRepository)
+from trasto.infrastructure.asyncio.services import brain
+from trasto.infrastructure.memory.repositories import (EstadoDeHumorRepository,
+                                                       Idefier)
+from trasto.model.commands import ComandoNuevaAccion, ComandoNuevaTarea
+from trasto.model.entities import Accion, Tarea, TipoAccion
 from trasto.model.value_entities import Idd
 
-from trasto.infrastructure.memory.repositories import EstadoDeHumorRepository, Idefier
-
-from trasto.infrastructure.asyncio.services import brain
-
+accion_repo = AccionRepository()
 
 async def get_service(request):
 
@@ -63,37 +61,42 @@ async def new_accion(request):
 
 
 async def get_all_acciones(request):
-    pass
+    acciones = accion_repo.get_all_json()
+    type(acciones)
+    return web.json_response({
+        "acciones": acciones
+    })
 
 
 class ScraperServer:
 
-    def __init__(self, host, port, loop=None):
+    def __init__(self, host, port, accion_repo, loop=None):
 
         self.host = host
         self.port = port
 
         self.loop = asyncio.get_event_loop() if loop is None else loop
-
+        self.accion_repo = accion_repo
 
     async def start_background_tasks(self, app):
 
         t_executor = ThreadPoolExecutor(
             max_workers=10
         )
+
         humor_repo = EstadoDeHumorRepository()
         tarea_repo = TareaRepository()
-        resultado_repo = ResultadoAccionRepository()
         comando_repo = ComandoRepository()
-        accion_repo = AccionRepository()
+
+        evento_repo = EventoRepository()
 
         app['brain'] = self.loop.create_task(brain(
             thread_executor=t_executor,
-            resultado_repo=resultado_repo,
             tarea_repo=tarea_repo,
             comando_repo=comando_repo,
             humor_repo=humor_repo,
-            accion_repo=accion_repo))
+            accion_repo=self.accion_repo,
+            evento_repo=evento_repo))
 
     async def cleanup_background_tasks(self, app):
         app['brain'].cancel()
@@ -119,5 +122,5 @@ class ScraperServer:
 
 if __name__ == '__main__':
     
-    s = ScraperServer(host='localhost', port=8080)
+    s = ScraperServer(host='localhost', port=8080, accion_repo=accion_repo)
     s.run_app()
