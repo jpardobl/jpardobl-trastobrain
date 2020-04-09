@@ -17,15 +17,16 @@ class Accion:
         return f"Accion[nombre={self.nombre};tipo={self.tipo}]"
 
 class Tarea:
-    def __init__(self, idd: Idd, nombre: str, accion: Accion, prioridad: Prioridad, **parametros: dict):
+    #TODO: Hacer que Tarea no use Accion, solo use su idd
+    def __init__(self, idd: Idd, nombre: str, accionid: Idd, prioridad: Prioridad, **parametros: dict):
         self.idd = idd
         self.nombre = nombre
-        self.accion = accion
+        self.accionid = accionid
         self.parametros = parametros
         self.prioridad = prioridad
 
     def __str__(self):
-        return f"Tarea[{self.nombre}], accion: {self.accion}"
+        return f"Tarea[{self.nombre}], accion: {self.accionid}"
 
     def __cmp__(self, other):
         return cmp(self.prioridad, other.prioridad)
@@ -61,7 +62,7 @@ class AccionRepositoryInterface:
     def del_accion(self, accion: Accion) -> bool:
         pass
 
-        
+
 
 class TareaRepositoryInterface:
     def next_tarea(self) -> Tarea:

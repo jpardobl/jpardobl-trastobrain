@@ -32,7 +32,7 @@ async def new_task(request):
             tarea=Tarea(
                 Idd(Idefier()),
                 nombre=r['nombre'],
-                accion=r['accion'],
+                accionid=r['accionid'],
                 prioridad=r['prioridad']
             )
         )

@@ -52,7 +52,7 @@ class LoggerRepository:
 
 class Idefier(IdefierInterface):
     def create_new_id(self):
-        return uuid.uuid1()
+        return uuid.uuid4()
 
 
 class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
@@ -67,8 +67,6 @@ class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
 
     def que_tal(self):
         return f"{self.humor}"
-
-
 
 
 class ComandoRepository(ComandoRepositoryInterface):

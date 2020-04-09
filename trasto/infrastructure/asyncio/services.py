@@ -3,6 +3,7 @@ import json
 import traceback
 
 from trasto.infrastructure.memory.repositories import LoggerRepository, Idefier
+from trasto.infrastructure.asyncio.repositories import AccionNotFoundException
 from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
                                    ComandoRepositoryInterface)
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
@@ -56,39 +57,52 @@ class Ejecutor(EjecutorInterface):
     def __init__(self):
         self.logger = LoggerRepository('ejecutor')
 
-    def listen_for_next_tarea(self, tarea_repo: TareaRepositoryInterface, evento_repo: EventRepositoryInterface):
+    def listen_for_next_tarea(self, tarea_repo: TareaRepositoryInterface, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface):
         try:
             self.logger.debug("Escuchando por nueva tarea")
             for tarea in tarea_repo.next_tarea():
-                self.ejecuta_tarea(tarea=tarea, evento_repo=evento_repo)
+                self.ejecuta_tarea(tarea=tarea, evento_repo=evento_repo, accion_repo=accion_repo)
                 self.logger.debug("Escuchando por nueva tarea")
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
 
 
-    def ejecuta_tarea(self, tarea: Tarea, evento_repo: EventRepositoryInterface): 
+    def ejecuta_tarea(self, tarea: Tarea, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface): 
         print(tarea)
-        accion = tarea.accion
-        self.logger.debug(f"Ejecutamos: {accion}")
-        #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
+        evento = None
         resultado = None
-        if int(tarea.nombre) > 0:
-            resultado = ResultadoAccion(
-                codigo=CodigoResultado(codigo=CodigoResultado.BUEN_RESULTADO),
-                msg="la tarea ha ido bien"
-            )
-        else:
+        try:
+            accionid = tarea.accionid
+            accion = accion_repo.get_accion_by_id(idd=accionid)
+            self.logger.debug(f"Ejecutamos: {accion}")
+            #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
+            resultado = None
+            if int(tarea.nombre) > 0:
+                resultado = ResultadoAccion(
+                    codigo=CodigoResultado(codigo=CodigoResultado.BUEN_RESULTADO),
+                    msg="la tarea ha ido bien"
+                )
+            else:
+                resultado = ResultadoAccion(
+                    codigo=CodigoResultado(codigo=CodigoResultado.MAL_RESULTADO),
+                    msg="la tarea ha ido mal"
+                )
+            evento = AccionTerminada(
+                idd=Idd(idefier=Idefier()), 
+                tarea_idd=tarea.idd,
+                resultado=resultado)
+        except AccionNotFoundException as ex:
             resultado = ResultadoAccion(
                 codigo=CodigoResultado(codigo=CodigoResultado.MAL_RESULTADO),
-                msg="la tarea ha ido mal"
+                msg="No existe la tarea"
             )
-        evento = AccionTerminada(
-            idd=Idd(idefier=Idefier()), 
-            tarea_idd=tarea.idd,
-            resultado=resultado)
-        
-        evento_repo.pub_event(evento=evento)
+            evento = AccionTerminada(
+                idd=Idd(idefier=Idefier()), 
+                tarea_idd=tarea.idd,
+                resultado=resultado)
+        finally:
+            evento_repo.pub_event(evento=evento)
         
 
 class Comander(ComanderInterface):
@@ -127,7 +141,7 @@ async def brain(thread_executor, tarea_repo, comando_repo, humor_repo, accion_re
         loop = asyncio.get_event_loop()
         blocking_tasks = [
             loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, evento_repo),
-            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, evento_repo),
+            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, evento_repo, accion_repo),
             loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo, accion_repo, evento_repo)
         ]
         
