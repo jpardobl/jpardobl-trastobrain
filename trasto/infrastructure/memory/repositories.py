@@ -52,7 +52,7 @@ class LoggerRepository:
 
 class Idefier(IdefierInterface):
     def create_new_id(self):
-        return uuid.uuid4()
+        return uuid.uuid4().hex
 
 
 class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):

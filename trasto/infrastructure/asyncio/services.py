@@ -1,9 +1,10 @@
 import asyncio
 import json
+import time
 import traceback
 
-from trasto.infrastructure.memory.repositories import LoggerRepository, Idefier
 from trasto.infrastructure.asyncio.repositories import AccionNotFoundException
+from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
                                    ComandoRepositoryInterface)
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
@@ -16,7 +17,7 @@ from trasto.model.events import (AccionTerminada, Evento,
 from trasto.model.service_comander import ComanderInterface
 from trasto.model.service_ejecutor import EjecutorInterface
 from trasto.model.service_sensor import SensorInterface
-from trasto.model.value_entities import Idd, Prioridad, TipoAccion
+from trasto.model.value_entities import Idd, Prioridad, TipoAccion, IdefierInterface
 
 
 class CommandNotImplemented(Exception):
@@ -57,26 +58,30 @@ class Ejecutor(EjecutorInterface):
     def __init__(self):
         self.logger = LoggerRepository('ejecutor')
 
-    def listen_for_next_tarea(self, tarea_repo: TareaRepositoryInterface, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface):
+    def listen_for_next_tarea(self, id_repo: IdefierInterface, tarea_repo: TareaRepositoryInterface, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface):
         try:
             self.logger.debug("Escuchando por nueva tarea")
             for tarea in tarea_repo.next_tarea():
-                self.ejecuta_tarea(tarea=tarea, evento_repo=evento_repo, accion_repo=accion_repo)
+                self.ejecuta_tarea(tarea=tarea, id_repo=id_repo, evento_repo=evento_repo, accion_repo=accion_repo)
                 self.logger.debug("Escuchando por nueva tarea")
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
 
 
-    def ejecuta_tarea(self, tarea: Tarea, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface): 
-        print(tarea)
+    def ejecuta_tarea(self, tarea: Tarea, id_repo:IdefierInterface, evento_repo: EventRepositoryInterface, accion_repo: AccionRepositoryInterface): 
+        
         evento = None
         resultado = None
         try:
             accionid = tarea.accionid
-            accion = accion_repo.get_accion_by_id(idd=accionid)
-            self.logger.debug(f"Ejecutamos: {accion}")
+            self.logger.debug(f"Intentamos ejecutar accionid: {accionid}")
+            accion = accion_repo.get_accion_by_id(idd=Idd(idefier=id_repo, idd_str=accionid))
+            self.logger.debug(f"Ejecutamos: {accion} (dormimos 10s)")
+
             #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
+            time.sleep(10)
+            self.logger.debug("despertamos, tarea ejecutada")
             resultado = None
             if int(tarea.nombre) > 0:
                 resultado = ResultadoAccion(
@@ -134,14 +139,14 @@ class Comander(ComanderInterface):
                 traceback.print_exc()
         
 
-async def brain(thread_executor, tarea_repo, comando_repo, humor_repo, accion_repo, evento_repo):
+async def brain(thread_executor, id_repo, tarea_repo, comando_repo, humor_repo, accion_repo, evento_repo):
     logger = LoggerRepository('brain')
     try:
 
         loop = asyncio.get_event_loop()
         blocking_tasks = [
             loop.run_in_executor(thread_executor, Sensor(humor_repo).listen_to_task_result, evento_repo),
-            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, tarea_repo, evento_repo, accion_repo),
+            loop.run_in_executor(thread_executor, Ejecutor().listen_for_next_tarea, id_repo, tarea_repo, evento_repo, accion_repo),
             loop.run_in_executor(thread_executor, Comander().listen_to_command, comando_repo, tarea_repo, accion_repo, evento_repo)
         ]
         

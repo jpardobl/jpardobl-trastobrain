@@ -25,6 +25,13 @@ class ComandoNuevaAccion(Comando):
     def __str__(self):
         return f"Comando Nueva Accion[idd: {self.idd}, accion: {self.accion}]"
 
+class ComandoNuevaTareaLibreAlbedrio(Comando):
+    def __init__(self, idd: Idd):
+        self.idd = idd
+
+    def __str__(self):
+        return f"Comando Nueva Tarea Libre Albedrio[idd: {self.idd}]"
+
 
 class ComandoRepositoryInterface:
     def next_comando(self) -> Comando:

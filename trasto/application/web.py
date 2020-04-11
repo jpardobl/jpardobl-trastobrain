@@ -87,11 +87,12 @@ class ScraperServer:
         humor_repo = EstadoDeHumorRepository()
         tarea_repo = TareaRepository()
         comando_repo = ComandoRepository()
-
+        id_repo = Idefier()
         evento_repo = EventoRepository()
 
         app['brain'] = self.loop.create_task(brain(
             thread_executor=t_executor,
+            id_repo=id_repo,
             tarea_repo=tarea_repo,
             comando_repo=comando_repo,
             humor_repo=humor_repo,

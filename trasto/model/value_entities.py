@@ -7,15 +7,19 @@ class IdefierInterface:
         pass
 
 class Idd:
-    def __init__(self, idefier: IdefierInterface):
-        self._id = idefier.create_new_id()
+    def __init__(self, idefier: IdefierInterface, idd_str=None):
+        if not idd_str is None:
+            self._id = idd_str
+        else:
+            self._id = idefier.create_new_id()
 
     @property
     def id(self):
         return self._id     
 
     def __eq__(self, other):
-        return self._id == other.id
+        
+        return f"{self}" == f"{other}"
 
     def __repr__(self):
         return f"{self.id}"

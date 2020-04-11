@@ -2,7 +2,7 @@ import json
 from queue import Empty, Full, PriorityQueue, Queue
 
 from trasto.infrastructure.asyncio import QueueMorph
-from trasto.infrastructure.memory.repositories import LoggerRepository
+from trasto.infrastructure.memory.repositories import LoggerRepository,Idefier
 from trasto.model.commands import ComandoRepositoryInterface
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
                                    Prioridad, Tarea, TareaRepositoryInterface)
@@ -94,8 +94,10 @@ class AccionRepository(AccionRepositoryInterface):
     def get_all(self):
         return tuple(a for a in self.acciones)
 
-    def get_accion_by_id(self, idd):
+    def get_accion_by_id(self, idd: Idd):
+        print(f"EStamos dentri: {self.acciones}")
         for accion in self.acciones:
+            print("prrrrrtrtrttrtrtrtrtrtrttrtrtr")
             if accion.idd == idd:
                 return accion
         raise AccionNotFoundException(f"idd={idd}")
@@ -125,6 +127,15 @@ class AccionRepository(AccionRepositoryInterface):
             "script_url": accion.script_url,
             "tipo": f"{accion.tipo}"
         })
+
+    def from_json(self, json_str_accion: str):
+        json_accion = json.loads(json_str_accion)
+        return Accion(
+            idd=Idd(idefier=Idefier(), idd_str=json_accion['idd']),
+            nombre=json_accion['nombre'],
+            script_url=json_accion['script_url'],
+            tipo=json_accion['tipo']
+        )
 
     def get_all_json(self):
         return tuple(json.loads(self.to_json(accion)) for accion in self.get_all())
