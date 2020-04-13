@@ -1,12 +1,12 @@
 
 
-#Simple brain for robotics. 
+# Simple brain for robotics. 
 
 
 It is developed using a Domain Driven Design aproach and Onion Architecture.
 
 
-###How to start
+### How to start
 
 First create a Python virtual environment:
 ```
