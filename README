@@ -3,5 +3,33 @@
 Simple brain for robotics. 
 
 
-It is deverloped using a Domain Driven Design aproach and Onion Architecture.
+It is developed using a Domain Driven Design aproach and Onion Architecture.
 
+
+How to start
+
+First create a Python virtual environment:
+
+```
+> virtualenv venv
+```
+
+Activate the new virtual environment.
+
+```
+> . venv/bin/activate
+```
+
+Clone the repo
+
+git clone git@github.com:jpardobl/jpardobl-trastobrain.git
+
+```
+cd jpardobl-trastobrain
+```
+
+Install the project into the virtualenv
+
+```
+pip install .
+```
