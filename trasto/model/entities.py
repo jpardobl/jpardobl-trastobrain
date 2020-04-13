@@ -39,9 +39,14 @@ class EstadoHumorRepositoryInterface:
     def empeora(self) -> None:
         pass
 
-    def que_tal(self):
+    def que_tal(self) -> int:
         pass
 
+    def estas_enfadado(self) -> bool:
+        pass
+
+    def estas_euforico(self) -> bool:
+        pass
 
 class AccionRepositoryInterface:
     def append(self, accion: Accion) -> None:
@@ -53,7 +58,13 @@ class AccionRepositoryInterface:
     def get_all(self) -> tuple:
         pass
 
-    def get_accion_by_type(self, tipo: TipoAccion) -> tuple:
+    def get_acciones_by_type(self, tipo: TipoAccion) -> tuple:
+        pass
+
+    def get_acciones_buen_humor(self) -> tuple:
+        pass
+
+    def get_acciones_mal_humor(self) -> tuple:
         pass
 
     def get_accion_by_id(self, idd: Idd) -> Accion:

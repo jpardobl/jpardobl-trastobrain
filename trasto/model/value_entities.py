@@ -81,7 +81,9 @@ class ResultadoAccion:
         return f"Resultado[codigo: : {self._codigo}; msg: {self._msg}"
 
 class TipoAccion:
-
+    BUEN_HUMOR = "buenhumor"
+    MAL_HUMOR = "malhumor"
+    
     def __init__(self, nombre: str):
         self._nombre = nombre
 

@@ -1,23 +1,25 @@
 import asyncio
 import json
+import random
 import time
 import traceback
 
 from trasto.infrastructure.asyncio.repositories import AccionNotFoundException
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
-                                   ComandoRepositoryInterface)
+                                   ComandoRepositoryInterface, ComandoNuevaTareaLibreAlbedrio)
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
                                    CodigoResultado,
                                    EstadoHumorRepositoryInterface,
                                    ResultadoAccion, Tarea,
                                    TareaRepositoryInterface)
 from trasto.model.events import (AccionTerminada, Evento,
-                                 EventRepositoryInterface)
+                                 EventRepositoryInterface, EstadoHumorCambiado)
 from trasto.model.service_comander import ComanderInterface
 from trasto.model.service_ejecutor import EjecutorInterface
 from trasto.model.service_sensor import SensorInterface
-from trasto.model.value_entities import Idd, Prioridad, TipoAccion, IdefierInterface
+from trasto.model.value_entities import (Idd, IdefierInterface, Prioridad,
+                                         TipoAccion)
 
 
 class CommandNotImplemented(Exception):
@@ -37,18 +39,21 @@ class Sensor(SensorInterface):
             for evento in evento_repo.subscribe_event():
                 if isinstance(evento, AccionTerminada):
                     self.logger.debug(f"Se ha terminado la accion: {evento.tarea_idd}, resultado: {evento.resultado}")
-                    self.update_humor_from_task_result(evento.resultado, self.humor_repo)
+                    self.update_humor_from_task_result(evento.resultado, self.humor_repo, evento_repo)
                     self.logger.debug("Escuchando a resultado de tarea")
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
 
 
-    def update_humor_from_task_result(self, resultado: ResultadoAccion, humor_repo: EstadoHumorRepositoryInterface):
+    def update_humor_from_task_result(self, resultado: ResultadoAccion, humor_repo: EstadoHumorRepositoryInterface, evento_repo: EventRepositoryInterface):
         try:
             print(resultado)
             humor_repo.mejora() if resultado.is_good() else humor_repo.empeora()
             self.logger.debug("el humor ha cambiado a : {}".format(humor_repo.que_tal()))
+            evento_repo.pub_event(EstadoHumorCambiado(
+                idd=Idd(Idefier()),
+                nuevo_estado_humor=humor_repo.que_tal()))
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
@@ -75,8 +80,9 @@ class Ejecutor(EjecutorInterface):
         resultado = None
         try:
             accionid = tarea.accionid
-            self.logger.debug(f"Intentamos ejecutar accionid: {accionid}")
-            accion = accion_repo.get_accion_by_id(idd=Idd(idefier=id_repo, idd_str=accionid))
+            idd = Idd(idefier=id_repo, idd_str=accionid)
+            self.logger.debug(f"Intentamos ejecutar accionid: {idd}, repo: {accion_repo}")
+            accion = accion_repo.get_acciones_by_id(idd)
             self.logger.debug(f"Ejecutamos: {accion} (dormimos 10s)")
 
             #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
@@ -123,7 +129,6 @@ class Comander(ComanderInterface):
         while True:
             try:
                 cmd = repo_command.next_comando()
-                print(cmd)
                 if isinstance(cmd, ComandoNuevaTarea):
                     self.enqueue_task(cmd.tarea, tarea_repo)
                     continue
@@ -138,6 +143,25 @@ class Comander(ComanderInterface):
                 self.logger.error(ex)
                 traceback.print_exc()
         
+
+async def librealbedrio(comando_repo, humor_repo):
+    logger = LoggerRepository('librealbedrio')
+    while True:
+        rnd = random.randrange(10, 60)
+        logger.debug("Esperamos {rnd} para actuar")
+        await asyncio.sleep(rnd)
+        cmd = ComandoNuevaTareaLibreAlbedrio(idd=Idd(Idefier()))
+        humor = humor_repo.que_tal()
+        logger.debug(f"Hemos despertado, vemos que estamos con el humor: {humor}")
+        acciones = ()
+        if not humor_repo.estas_enfadado() and not humor_repo.estas_euforico():
+            logger.debug("No hacemos nada porque ni estamos euforicos, ni enfadados")
+            continue
+        cmd = ComandoNuevaTareaLibreAlbedrio(idd=Idd(Idefier))
+        await comando_repo.send_comando(cmd)
+        logger.debub("Acabamos de enviar un comando de libre albedrio")
+
+
 
 async def brain(thread_executor, id_repo, tarea_repo, comando_repo, humor_repo, accion_repo, evento_repo):
     logger = LoggerRepository('brain')

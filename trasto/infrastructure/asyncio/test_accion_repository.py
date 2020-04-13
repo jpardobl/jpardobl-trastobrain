@@ -37,8 +37,8 @@ def test_get_by_id():
 
     #with pytest.raises(AccionNotFoundException):
     #    accion = accion_repo.get_accion_by_id(Idd(idefier, "estanoexiste"))
-
+    print(acciones)
     id_str = acciones[0].idd
 
-    accion = accion_repo.get_accion_by_id(Idd(idefier, id_str))
+    accion = accion_repo.get_acciones_by_id(Idd(idefier, id_str))
     assert accion.idd == id_str, "Deberia haber recuperado la accion con idd igual al que creo"

@@ -33,6 +33,12 @@ class AccionTerminada(Evento):
     def resultado(self):
         return self._resultado
 
+class EstadoHumorCambiado(Evento):
+    def __init__(self, idd: IdefierInterface, nuevo_estado_humor: int):
+        super().__init__(idd)
+        self.nuevo_estado_humor = nuevo_estado_humor
+
+
 class EventRepositoryInterface:
     def pub_event(self, evento: Evento) -> bool:
         pass

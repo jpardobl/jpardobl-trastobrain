@@ -39,8 +39,8 @@ async def new_task(request):
     )
     return web.json_response({
         "msg": "solicitud recibida",
-        "request": r
-    })
+        "request": r},
+        status=200)
 
 
 async def new_accion(request):
@@ -58,6 +58,7 @@ async def new_accion(request):
             )
         )
     )
+    return web.json_response()
 
 
 async def get_all_acciones(request):

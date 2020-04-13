@@ -86,7 +86,7 @@ class AccionRepository(AccionRepositoryInterface):
         self.logger = LoggerRepository('accion_repo')
         self.acciones = list()
 
-    def get_action_by_type(self, tipo: TipoAccion):
+    def get_actiones_by_type(self, tipo: TipoAccion):
         for accion in self.acciones:
             if accion.tipo == tipo:
                 yield accion
@@ -94,13 +94,20 @@ class AccionRepository(AccionRepositoryInterface):
     def get_all(self):
         return tuple(a for a in self.acciones)
 
-    def get_accion_by_id(self, idd: Idd):
-        print(f"EStamos dentri: {self.acciones}")
+
+    def get_acciones_by_id(self, idd: Idd):
+        self.logger.debug(f"Buscamos accion con la idd: {idd}")
         for accion in self.acciones:
-            print("prrrrrtrtrttrtrtrtrtrtrttrtrtr")
+            self.logger.debug(f"Miramos si esta accion {accion} corresponde con id: {idd}")
             if accion.idd == idd:
                 return accion
         raise AccionNotFoundException(f"idd={idd}")
+
+    def get_acciones_buen_humor(self):
+        return (a for a in self.get_acciones_by_type(TipoAccion(TipoAccion.BUEN_HUMOR)))
+    
+    def get_acciones_mal_humor(self):
+        return (a for a in self.get_acciones_by_type(TipoAccion(TipoAccion.MAL_HUMOR)))
 
     def del_accion(self, accion: Accion):
         self.acciones.remove(accion)

@@ -10,6 +10,10 @@ from trasto.model.value_entities import CambioHumor, IdefierInterface, Prioridad
 
 HUMOR_INICIAL = 0
 
+LIMITE_HUMOR_EUFORICO = 10
+LIMITE_HUMOR_ENFADADO = -10
+
+
 DEFAULT_LOG_LEVEL = logging.DEBUG
 
 
@@ -66,9 +70,15 @@ class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
         self.humor = self.humor + CambioHumor.HUMOR_EMPEORA
 
     def que_tal(self):
-        return f"{self.humor}"
+        return self.humor
 
+    def estas_enfadado(self):
+        return self.humor <= LIMITE_HUMOR_ENFADADO
 
+    def estas_euforico(self):
+        return self.humor >= LIMITE_HUMOR_EUFORICO
+
+        
 class ComandoRepository(ComandoRepositoryInterface):
 
     def __init__(self):
