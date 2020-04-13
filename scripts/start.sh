@@ -14,5 +14,5 @@ printenv
 
 
 # Launch filetrans server
-python trastobrain/trasto/application/web.py
+python trasto/application/web.py
 
