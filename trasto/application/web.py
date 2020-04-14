@@ -124,5 +124,5 @@ class ScraperServer:
 
 if __name__ == '__main__':
     
-    s = ScraperServer(host='localhost', port=8080, accion_repo=accion_repo)
+    s = ScraperServer(host='0.0.0.0', port=8080, accion_repo=accion_repo)
     s.run_app()

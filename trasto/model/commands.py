@@ -8,7 +8,6 @@ from trasto.model.entities import Tarea, Accion
 class Comando(ABC):
     pass
 
-
 class ComandoNuevaTarea(Comando):
     def __init__(self, idd: Idd, tarea: Tarea):
         self.idd = idd

@@ -42,3 +42,5 @@ def test_get_by_id():
 
     accion = accion_repo.get_acciones_by_id(Idd(idefier, id_str))
     assert accion.idd == id_str, "Deberia haber recuperado la accion con idd igual al que creo"
+
+

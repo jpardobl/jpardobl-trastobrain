@@ -127,6 +127,7 @@ class Comander(ComanderInterface):
     def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface, accion_repo: AccionRepositoryInterface, evento_repo: EventRepositoryInterface):
         self.logger.debug("Escuchando por nuevo comando")
         while True:
+            #hay que utilizar repo_command como un generador
             try:
                 cmd = repo_command.next_comando()
                 if isinstance(cmd, ComandoNuevaTarea):
