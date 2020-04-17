@@ -1,15 +1,17 @@
-from trasto.infrastructure.aws_sqs.repositories import ComandoRepository, COMANDOS_QUEUE_NAME
-from trasto.model.commands import Comando, ComandoNuevaAccion, ComandoNuevaTarea
-from trasto.model.value_entities import Idd, TipoAccion
-from trasto.model.entities import Accion, Tarea
+from trasto.infrastructure.aws_multiprocess.aws import (AWS_PROFILE,
+                                                        get_aws_session)
+from trasto.infrastructure.aws_multiprocess.repositories import (
+    COMANDOS_QUEUE_NAME, ComandoRepository)
 from trasto.infrastructure.memory.repositories import Idefier
-from trasto.infrastructure.aws_sqs.aws import delete_queue, get_aws_session, AWS_PROFILE
+from trasto.model.commands import (Comando, ComandoNuevaAccion,
+                                   ComandoNuevaTarea)
+from trasto.model.entities import Accion, Tarea
+from trasto.model.value_entities import Idd, TipoAccion
 
-def off_test_comando_nueva_accion():
 
-
+def test_comando_nueva_accion():
     comando_repo = ComandoRepository()
-
+    print(comando_repo.comandos)
     cna = ComandoNuevaAccion(
         idd=Idd(Idefier()),
         accion=Accion(
@@ -28,7 +30,6 @@ def off_test_comando_nueva_accion():
         msg.delete()
         break
 
-    delete_queue(COMANDOS_QUEUE_NAME, get_aws_session(profile_name=AWS_PROFILE))
 
 
 def test_comando_nueva_tarea():
@@ -55,16 +56,15 @@ def test_comando_nueva_tarea():
             accionid="accion"
         )
     )
-
+    print(f"Enviamos: {cnt_alta}")
     comando_repo.send_comando(cnt_alta)
     comando_repo.send_comando(cnt_baja)
 
     count = 0
-    for ccnt in comando_repo.next_comando():
+    for ccnt, msg in comando_repo.next_comando():
         assert isinstance(ccnt, ComandoNuevaTarea)
         assert ccnt.tarea.nombre in ("tareabaja", "tareaalta")
+        msg.delete()
         count = count + 1
         if count == 2:
             break
-
-    delete_queue(COMANDOS_QUEUE_NAME, get_aws_session(profile_name=AWS_PROFILE))

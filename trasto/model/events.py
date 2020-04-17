@@ -18,6 +18,15 @@ class NuevaAccionCreada(Evento):
         self._accion_idd = accion_idd
         self._accion_nombre = accion_nombre
 
+    @property
+    def accion_idd(self):
+        return str(self._accion_idd)
+
+    @property
+    def accion_nombre(self):
+        return str(self._accion_nombre)
+
+
 
 class AccionTerminada(Evento):
     def __init__(self, idd: IdefierInterface, tarea_idd: IdefierInterface, resultado: ResultadoAccion):

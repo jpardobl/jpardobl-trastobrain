@@ -1,5 +1,9 @@
 
-from trasto.infrastructure.aws_sqs.aws import delete_queue, get_aws_session, AWS_PROFILE, create_or_get_fifo_queue
+import time
+
+from trasto.infrastructure.aws_multiprocess.aws import (
+    create_dynamodb_acciones_table, create_fifo_queue, delete_queue,
+    delete_table, get_dynamodb_table, get_queue)
 
 
 def test_create_or_get_fifo_queue():
@@ -27,4 +31,18 @@ def test_create_or_get_fifo_queue():
 
     queue.delete()
 
+
     
+def test_deploy():
+    queue_name = "trasto_brain_test_queue"
+    create_dynamodb_acciones_table()
+    time.sleep(10)
+    assert not get_dynamodb_table() is None
+
+    delete_table()
+
+    create_fifo_queue(queue_name)
+    time.sleep(10)
+    assert not get_queue(queue_name) is None
+
+    delete_queue()

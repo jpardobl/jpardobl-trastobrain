@@ -17,10 +17,10 @@ tareas_para_ejecutar = Queue()
 resultados_accion = Queue()
 eventos = Queue()
 
-
-
 class AccionNotFoundException(Exception):
     pass
+
+
 
 
 class EventoRepository(EventRepositoryInterface):
