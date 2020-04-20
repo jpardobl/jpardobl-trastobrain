@@ -32,7 +32,10 @@ class AccionTerminada(Evento):
     def __init__(self, idd: IdefierInterface, tarea_idd: IdefierInterface, resultado: ResultadoAccion):
         super().__init__(idd)
         self._tarea_idd = tarea_idd
-        self._resultado = resultado
+        if isinstance(resultado, dict):
+            self._resultado = ResultadoAccion(**resultado)
+        else:
+            self._resultado = resultado
 
     @property
     def tarea_idd(self):

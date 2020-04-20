@@ -54,7 +54,7 @@ class CodigoResultado:
         return self.codigo == other.codigo
 
     def __str__(self):
-        return "bueno" if self.codigo == self.BUEN_RESULTADO else "MALO"
+        return "BIEN" if self.codigo == self.BUEN_RESULTADO else "MAL"
 
 
 class ResultadoAccion:

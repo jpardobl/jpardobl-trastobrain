@@ -41,12 +41,7 @@ class AccionRepository(AccionRepositoryInterface):
 
     @staticmethod
     def deserialize(accion: dict) -> Accion:
-        return Accion(
-            idd=accion['idd'],
-            nombre=accion['nombre'],
-            script_url=accion['script_url'],
-            tipo=accion['tipo']
-        )
+        return Accion(**accion)
 
     def get_actiones_by_type(self, tipo: TipoAccion):
         self.set_table()

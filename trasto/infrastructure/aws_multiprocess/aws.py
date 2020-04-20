@@ -65,6 +65,7 @@ def create_dynamodb_acciones_table():
     )
 
 
+
 def delete_acciones_table():
     get_aws_session().resource('dynamodb').Table(TABLE_ACCIONES_NAME).delete()
 
@@ -77,10 +78,10 @@ def get_dynamodb_acciones_table():
 
 def create_queues():
     create_fifo_queue(EVENTOS_QUEUE_NAME)
-    create_fifo_queue(TAREAS_NORMALES_QUEUE_NAME)
-    create_fifo_queue(TAREAS_PRIORITARIAS_QUEUE_NAME)
-    create_fifo_queue(COMANDOS_QUEUE_NAME)
+    #create_fifo_queue(TAREAS_NORMALES_QUEUE_NAME)
+    #create_fifo_queue(TAREAS_PRIORITARIAS_QUEUE_NAME)
+    #create_fifo_queue(COMANDOS_QUEUE_NAME)
 
 if __name__ == "__main__":
     create_queues()
-    create_dynamodb_acciones_table()
+    #create_dynamodb_acciones_table()

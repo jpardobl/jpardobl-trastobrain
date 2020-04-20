@@ -1,12 +1,13 @@
 
 
-from trasto.infrastructure.aws_multiprocess.repositories import AccionRepository, EventoRepository
+from trasto.infrastructure.aws_multiprocess.repositories import AccionRepository
+from trasto.infrastructure.aws_multiprocess.evento_repository import EventoRepository
 from trasto.model.entities import Accion
 from trasto.model.value_entities import Idd, TipoAccion
 from trasto.infrastructure.memory.repositories import Idefier
 
 from trasto.infrastructure.aws_multiprocess.aws import create_dynamodb_acciones_table
-from trasto.infrastructure.aws_multiprocess.accion_repository import TABLE_NAME
+from trasto.infrastructure.aws_multiprocess.accion_repository import 
 
 def test_get_by_id():
 

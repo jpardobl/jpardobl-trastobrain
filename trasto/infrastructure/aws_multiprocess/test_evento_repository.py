@@ -2,10 +2,27 @@
 
 from trasto.infrastructure.aws_multiprocess.evento_repository import \
     EventoRepository
-from trasto.infrastructure.memory.repositories import Idefier
+from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.events import (AccionTerminada, EstadoHumorCambiado,
                                  NuevaAccionCreada)
 from trasto.model.value_entities import Idd, ResultadoAccion, CodigoResultado
+
+
+logger = LoggerRepository('test_evento_respository')
+
+def test_send_evento_accion_terminada():
+    evento_repo = EventoRepository()
+
+    evento = AccionTerminada(
+        idd=Idd(Idefier()),
+        tarea_idd=Idd(Idefier()),
+        resultado=ResultadoAccion(
+            codigo=CodigoResultado(codigo="BIEN"),
+            msg="Mensaje de prueba")
+        )
+    
+
+    assert evento_repo.pub_event(evento=evento)
 
 
 def test_evento_accion_terminada():
@@ -15,19 +32,24 @@ def test_evento_accion_terminada():
         idd=Idd(Idefier()),
         tarea_idd=Idd(Idefier()),
         resultado=ResultadoAccion(
-            codigo=CodigoResultado(codigo="BIEN")
+            codigo=CodigoResultado(codigo=CodigoResultado.BUEN_RESULTADO),
+            msg="Mensaje de prueba")
         )
-    )
 
-    evento_repo.pub_event(evento=evento)
-
+    assert evento_repo.pub_event(evento=evento)
     
+    logger.debug("Buwcamos evetgnos")
     for ev, msg in evento_repo.subscribe_event():
-        assert ev.idd == evento.idd
-        assert ev.tarea_idd == evento.idd
-        assert ev.resultado.codigo == "BIEN"
-        msg.delete()
-        break
+        try:
+            logger.debug("ha llegado")
+            assert ev.idd == evento.idd
+            assert ev.tarea_idd == evento.tarea_idd
+            assert ev.resultado.codigo == "BIEN"
+        except Exception as ex:
+            print(ex)
+        finally:
+            msg.delete()
+            break
 
 
 def test_evento_estado_humor_cambiado():
@@ -39,7 +61,7 @@ def test_evento_estado_humor_cambiado():
         nuevo_estado_humor=300
     )
 
-    evento_repo.pub_event(evento=evento)
+    assert evento_repo.pub_event(evento=evento)
 
     for ev, msg in evento_repo.subscribe_event():
         assert ev.idd == evento.idd
@@ -53,10 +75,11 @@ def test_evento_nueva_accion_creada():
 
     evento = NuevaAccionCreada(
         idd=Idd(Idefier()),
-        accion_idd=Idd(Idefier())
+        accion_idd=Idd(Idefier()),
+        accion_nombre="Nombre accion"
     )
 
-    evento_repo.pub_event(evento)
+    assert evento_repo.pub_event(evento)
 
     for ev, msg in evento_repo.subscribe_event():
         assert ev.idd == evento.idd
