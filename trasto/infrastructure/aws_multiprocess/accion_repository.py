@@ -1,13 +1,15 @@
 
 import json
 
-from trasto.infrastructure.memory.repositories import Idd, LoggerRepository
+from boto3.dynamodb.conditions import Attr, Key
+from botocore.exceptions import ClientError
+from trasto.infrastructure.aws_multiprocess.aws import \
+    get_dynamodb_acciones_table
+from trasto.infrastructure.memory.repositories import (Idd, Idefier,
+                                                       LoggerRepository)
 from trasto.model.entities import Accion, AccionRepositoryInterface
-from trasto.model.events import EventRepositoryInterface
+from trasto.model.events import EventRepositoryInterface, NuevaAccionCreada
 from trasto.model.value_entities import Idd, TipoAccion
-from trasto.infrastructure.aws_multiprocess.aws import create_dynamodb_acciones_table
-
-
 
 
 class AccionNotFoundException(Exception):
@@ -17,15 +19,20 @@ class AccionNotFoundException(Exception):
 class AccionRepository(AccionRepositoryInterface):
     def __init__(self):
         self.logger = LoggerRepository('accion_repo')
-        self.table = None
+        self.acciones = get_dynamodb_acciones_table()
 
-    def set_table(self):
-        self.table = create_or_get_dynamodb(
-            table_name=TABLE_NAME,
-            key_schema=KEY_SCHEMA,
-            attributes=ATTRIBUTES
-        )
-
+    def purge_table(self):
+        try:
+            self.logger.debug(f"Eliminamos todos los elementos de la tabla")
+            response = self.acciones.scan()
+        except ClientError as ex:
+            self.logger.error(f"Error in get_by_type: {ex}")
+            return None
+        else:
+            for each in response['Items']:
+                self.acciones.delete_item(Key={'idd': each['idd']})
+        
+    
     @staticmethod
     def to_json(accion: Accion) -> dict:
         return {
@@ -43,23 +50,34 @@ class AccionRepository(AccionRepositoryInterface):
     def deserialize(accion: dict) -> Accion:
         return Accion(**accion)
 
-    def get_actiones_by_type(self, tipo: TipoAccion):
-        self.set_table()
-        for accion in self.acciones:
-            if accion.tipo == tipo:
-                yield accion
+    def get_acciones_by_type(self, tipo: TipoAccion):
+        try:
+            self.logger.debug(f"Buscamos accion con el tipo: {tipo}")
+            response = self.acciones.scan(
+                FilterExpression=Key('tipo').eq(str(tipo)))
+        except ClientError as ex:
+            self.logger.error(f"Error in get_by_type: {ex}")
+            return None
+        else:
+            for i in response['Items']:
+                yield AccionRepository.deserialize(i)
 
     def get_all(self):
-        return tuple(a for a in self.table.query())
+        return tuple(a for a in self.acciones.query())
 
 
-    def get_acciones_by_id(self, idd: Idd):
-        self.logger.debug(f"Buscamos accion con la idd: {idd}")
-        for accion in self.acciones:
-            self.logger.debug(f"Miramos si esta accion {accion} corresponde con id: {idd}")
-            if accion.idd == idd:
-                return accion
-        raise AccionNotFoundException(f"idd={idd}")
+    def get_accion_by_id(self, idd: Idd):
+        try:
+            self.logger.debug(f"Buscamos accion con la idd: {idd}")
+            response = self.acciones.get_item(Key={'idd': str(idd)})
+        except ClientError as ex:
+            self.logger.error(f"Error in get_by_id: {ex}")
+            return None
+        else:
+            if not 'Item' in response:
+                raise AccionNotFoundException(idd)
+
+            return AccionRepository.deserialize(response['Item'])
 
     def get_acciones_buen_humor(self):
         return (a for a in self.get_acciones_by_type(TipoAccion(TipoAccion.BUEN_HUMOR)))
@@ -68,8 +86,8 @@ class AccionRepository(AccionRepositoryInterface):
         return (a for a in self.get_acciones_by_type(TipoAccion(TipoAccion.MAL_HUMOR)))
 
     def del_accion(self, accion: Accion):
-        self.set_table()
-        self.table.delete_item(
+
+        self.acciones.delete_item(
             Key={
                 "idd":str(accion.idd)
             }
@@ -77,16 +95,20 @@ class AccionRepository(AccionRepositoryInterface):
             
     def rollback_append_accion(self, accion: Accion):
         self.logger.debug("Rolling back append accion")
-        self.set_table()
+
         self.del_accion(accion)
 
     def append_accion(self, accion: Accion, evento_repo: EventRepositoryInterface):
         try:
-            self.set_table()
-
-            self.logger.debug(f"Apending nueva accion: tabla: {self.table}item: {AccionRepository.to_json(accion)}")
-            self.table.put_item(Item=AccionRepository.to_json(accion))
-            emitido = evento_repo.pub_event(accion)
+            self.logger.debug(f"Apending nueva accion: tabla: {self.acciones} item: {AccionRepository.to_json(accion)}")
+            self.acciones.put_item(Item=AccionRepository.to_json(accion))
+            emitido = evento_repo.pub_event(
+                NuevaAccionCreada(
+                    idd=Idd(idefier=Idefier()),
+                    accion_idd=accion.idd,
+                    accion_nombre=accion.nombre
+                )
+            )
             if not emitido:
                 self.rollback_append_accion(accion=accion)
         except Exception as ex:

@@ -14,20 +14,12 @@ KEY_SCHEMA_ACCIONES=[
     {
         'AttributeName': 'idd',
         'KeyType': 'HASH'  #Partition key
-    },
-    {
-        'AttributeName': 'tipo',
-        'KeyType': 'RANGE'  #Sort key
-    }]
+    }, ]
 ATTRIBUTES_ACCIONES=[
     {
         'AttributeName': 'idd',
         'AttributeType': 'S'
-    },
-    {
-        'AttributeName': 'tipo',
-        'AttributeType': 'S'
-    }]
+    }, ]
 READ_CAPACITY_UNITS=5
 PROVISIONED_THROUGHTPUT=5
 

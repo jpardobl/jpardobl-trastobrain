@@ -6,6 +6,8 @@ from trasto.infrastructure.aws_multiprocess.aws import (
     delete_acciones_table, get_dynamodb_acciones_table, get_queue)
 
 
+def test_create_dynamodb_acciones_table():
+    assert not create_dynamodb_acciones_table() is None
 
     
 def test_deploy():

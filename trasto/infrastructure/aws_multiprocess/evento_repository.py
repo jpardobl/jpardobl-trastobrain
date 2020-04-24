@@ -12,14 +12,15 @@ MESSAGE_GROUP_ID = "1"
 MAX_NUMBER_OF_MESSAGES = 1
 POLL_TIME = 10
 
+class EventoNotImplemented(Exception):
+    pass
+
+
 class EventoRepository(EventRepositoryInterface):
     def __init__(self):
         self.logger = LoggerRepository('evento_repo')
         self.eventos = get_queue(EVENTOS_QUEUE_NAME)
 
-    def purge(self, session):
-        sqs = sqs_resource.meta.client
-        self.eventos.purge_queue()
 
     @staticmethod
     def to_json(evento: Evento):
@@ -33,6 +34,15 @@ class EventoRepository(EventRepositoryInterface):
                     "msg": evento.resultado.msg
                 }
             }
+        if isinstance(evento, NuevaAccionCreada):
+            return {
+                "clase": "NuevaAccionCreada",
+                "idd": str(evento.idd),
+                "accion_idd": str(evento.accion_idd),
+                "accion_nombre": str(evento.accion_nombre)
+            }
+        raise EventoNotImplemented(evento)
+        
 
     @staticmethod
     def from_json(evento: dict):
@@ -87,10 +97,7 @@ class EventoRepository(EventRepositoryInterface):
                 for cc in msg:
                     if cc is None:
                         break
-                    print(cc)
                     c = json.loads(cc.body)
-                    print(f"tttttttgttgtgtgtgtggttgtg{type(c)}")
-                    print(f"contenido: {c}")
                     yield EventoRepository.from_json(c), cc
  
             except Exception as ex:

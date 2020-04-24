@@ -11,7 +11,7 @@ class Accion:
         self.idd = idd
         self.nombre = nombre
         self.script_url = script_url
-        self.tipo = tipo
+        self.tipo = tipo if isinstance(tipo, TipoAccion) else TipoAccion(nombre=tipo)
 
     def __str__(self):
         return f"Accion[nombre={self.nombre};tipo={self.tipo}]"

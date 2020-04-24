@@ -64,10 +64,15 @@ def test_evento_estado_humor_cambiado():
     assert evento_repo.pub_event(evento=evento)
 
     for ev, msg in evento_repo.subscribe_event():
-        assert ev.idd == evento.idd
-        assert ev.nuevo_estado_humor == 300
-        msg.delete()
-        break
+        try:
+            assert ev.idd == evento.idd
+            assert ev.nuevo_estado_humor == 300
+        except Exception as ex:
+            print(ex)
+            
+        finally:
+            msg.delete()
+            break
 
     
 def test_evento_nueva_accion_creada():
@@ -82,7 +87,11 @@ def test_evento_nueva_accion_creada():
     assert evento_repo.pub_event(evento)
 
     for ev, msg in evento_repo.subscribe_event():
-        assert ev.idd == evento.idd
-        assert ev.accion_idd == evento.accion_idd
-        msg.delete()
-        break
+        try:
+            assert ev.idd == evento.idd
+            assert ev.accion_idd == evento.accion_idd
+        except Exception as ex:
+            print(ex)
+        finally:
+            msg.delete()
+            break
