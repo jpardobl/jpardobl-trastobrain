@@ -105,6 +105,8 @@ class TipoAccion:
 
 
 class Prioridad:
+    ALTA = 1
+    BAJA = 0
     def __init__(self, value: int):
         if not value in (0, 1):
             raise AttributeError("La prioridad solo puede ser 1 o 0")

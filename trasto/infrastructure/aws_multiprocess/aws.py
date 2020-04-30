@@ -27,6 +27,8 @@ PROVISIONED_THROUGHTPUT=5
 def get_aws_session(profile_name=AWS_PROFILE, region_name=AWS_REGION):
     return boto3.session.Session(profile_name=profile_name, region_name=region_name)
 
+def get_sqs_client(profile_name=AWS_PROFILE, region_name=AWS_REGION):
+    return get_aws_session(profile_name=profile_name, region_name=region_name).resource("sqs").meta.client
 
 def create_fifo_queue(name):
     sqs = get_aws_session().resource("sqs")

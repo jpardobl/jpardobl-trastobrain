@@ -1,14 +1,13 @@
 import json
-from queue import Empty, Full, PriorityQueue, Queue
-
-from trasto.infrastructure.aws_multiprocess.accion_repository import \
-    AccionRepository
+#from queue import Empty, Full, PriorityQueue, Queue
+from trasto.infrastructure.aws_multiprocess.tarea_repository import TareaRepository
+from trasto.infrastructure.aws_multiprocess.accion_repository import AccionRepository
 from trasto.infrastructure.aws_multiprocess.aws import get_queue, COMANDOS_QUEUE_NAME
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (Comando, ComandoNuevaAccion,
                                    ComandoNuevaTarea,
                                    ComandoRepositoryInterface)
-from trasto.model.entities import (Accion, AccionRepositoryInterface,
+from trasto.model.entities import (AccionRepositoryInterface,
                                    Prioridad, Tarea, TareaRepositoryInterface)
 from trasto.model.events import EventRepositoryInterface, Evento
 from trasto.model.value_entities import Idd, ResultadoAccion, TipoAccion
@@ -17,54 +16,6 @@ from trasto.model.value_entities import Idd, ResultadoAccion, TipoAccion
 MESSAGE_GROUP_ID = "1"
 MAX_NUMBER_OF_MESSAGES = 1
 POLL_TIME = 10
-
-
-
-
-class TareaRepository(TareaRepositoryInterface):
-
-    def __init__(self):
-        self.logger = LoggerRepository('tarea_repo')
-
-    @staticmethod
-    def to_json(tarea: Tarea) -> dict:
-        return {
-            "idd": str(tarea.idd),
-            "accionid": tarea.accionid,
-            "parametros": tarea.parametros,
-            "nombre": tarea.nombre,
-            "prioridad": tarea.prioridad
-        }
-
-    @staticmethod
-    def serialize(tarea: Tarea) -> str:
-        return json.dumps(TareaRepository.serialize(tarea))
-
-    @staticmethod
-    def deserialize(tarea: dict) ->Tarea:
-        return Tarea(
-            idd=tarea['idd'],
-            accionid=tarea['accionid'],
-            parametros=tarea['parametros'],
-            nombre=tarea['nombre'],
-            prioridad=tarea['prioridad']
-        )
-
-
-    def next_tarea(self):
-        while True:
-            try:
-                self.logger.debug("esperando por tarea")
-                yield tareas.get(block=True, timeout=QUEUE_TIMEOUT)
-            except Empty:
-                pass
-
-
-    def append(self, tarea: Tarea):
-        try:
-            tareas.put(tarea)
-        except:
-            self.logger.crit("Cola de tareas llena!!!!")
 
 
 class ComandoRepository(ComandoRepositoryInterface):
@@ -103,23 +54,19 @@ class ComandoRepository(ComandoRepositoryInterface):
 
     def next_comando(self):
         while True:
-            try:
-                self.logger.debug("Esperamos por nuevo comando")
+            self.logger.debug("Esperamos por nuevo comando")
+            cmd = self.comandos.receive_messages(
+                MaxNumberOfMessages=MAX_NUMBER_OF_MESSAGES,
+                WaitTimeSeconds=POLL_TIME,
+                AttributeNames=['MessageDeduplicationId', 'MessageGroupId']
+            )
+            for cc in cmd:
+                c = json.loads(cc.body)
+                if c['clase'] == "ComandoNuevaTarea":
+                    yield (ComandoRepository.deserialize_comando_nueva_tarea(c), cc)
+                if c['clase'] == "ComandoNuevaAccion":
+                    yield (ComandoRepository.deserialize_comando_nueva_accion(c), cc)
 
-                cmd = self.comandos.receive_messages(
-                    MaxNumberOfMessages=MAX_NUMBER_OF_MESSAGES,
-                    WaitTimeSeconds=POLL_TIME,
-                    AttributeNames=['MessageDeduplicationId', 'MessageGroupId']
-                )
-                for cc in cmd:
-                    c = json.loads(cc.body)
-                    
-                    if c['clase'] == "ComandoNuevaTarea":
-                        yield (ComandoRepository.deserialize_comando_nueva_tarea(c), cc)
-                    if c['clase'] == "ComandoNuevaAccion":
-                        yield (ComandoRepository.deserialize_comando_nueva_accion(c), cc)
-            except Empty:
-                pass
 
 
     def send_comando(self, comando):

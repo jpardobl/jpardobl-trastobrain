@@ -1,5 +1,4 @@
-from trasto.infrastructure.aws_multiprocess.aws import (AWS_PROFILE,
-                                                        get_aws_session)
+
 from trasto.infrastructure.aws_multiprocess.repositories import (
     COMANDOS_QUEUE_NAME, ComandoRepository)
 from trasto.infrastructure.memory.repositories import Idefier
@@ -11,7 +10,7 @@ from trasto.model.value_entities import Idd, TipoAccion
 
 def test_comando_nueva_accion():
     comando_repo = ComandoRepository()
-    print(comando_repo.comandos)
+
     cna = ComandoNuevaAccion(
         idd=Idd(Idefier()),
         accion=Accion(
@@ -23,12 +22,15 @@ def test_comando_nueva_accion():
     )
 
     comando_repo.send_comando(cna)
+    count = 0
     for ccna, msg in comando_repo.next_comando():
         assert not ccna is None
         assert isinstance(ccna, ComandoNuevaAccion)
         assert ccna.accion.nombre == "nombreaccion"
         msg.delete()
+        count = count + 1
         break
+    assert count == 1
 
 
 
@@ -56,7 +58,6 @@ def test_comando_nueva_tarea():
             accionid="accion"
         )
     )
-    print(f"Enviamos: {cnt_alta}")
     comando_repo.send_comando(cnt_alta)
     comando_repo.send_comando(cnt_baja)
 
@@ -68,3 +69,4 @@ def test_comando_nueva_tarea():
         count = count + 1
         if count == 2:
             break
+    assert count == 2

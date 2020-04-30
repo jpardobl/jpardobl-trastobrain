@@ -41,6 +41,12 @@ class EventoRepository(EventRepositoryInterface):
                 "accion_idd": str(evento.accion_idd),
                 "accion_nombre": str(evento.accion_nombre)
             }
+        if isinstance(evento, EstadoHumorCambiado):
+            return {
+                "clase": "EstadoHumorCambiado",
+                "idd": str(evento.idd),
+                "nuevo_estado_humor": evento.nuevo_estado_humor
+            }
         raise EventoNotImplemented(evento)
         
 
@@ -79,6 +85,10 @@ class EventoRepository(EventRepositoryInterface):
                 MessageDeduplicationId=str(evento.idd))
             self.logger.debug("Evento enviado")
             return True
+        
+        except EventoNotImplemented as exx:
+            raise exx
+
         except Exception as ex:
             self.logger.error(f"Sending event: {ex}")
             return False
