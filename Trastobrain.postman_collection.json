@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "65635366-92ab-4562-a6aa-dc4815bf72e9",
+		"name": "Trastobrain",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Service",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Acciones",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/acciones",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"acciones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Accion",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"nombre\": \"-1\",\n\t\"script_url\": \"git://github.com/jpardobl/accion\",\n\t\"tipo\": \"buenhumor\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/accion",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"accion"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear Tarea",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "49008a74-4372-4be4-82e0-589119e8e5f2",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"nombre\": \"-1\",\n\t\"accionid\": \"{{accion_idd}}\",\n\t\"prioridad\": \"1\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/task",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"task"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
