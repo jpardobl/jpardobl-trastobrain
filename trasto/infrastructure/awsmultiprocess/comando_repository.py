@@ -1,8 +1,8 @@
 import json
 #from queue import Empty, Full, PriorityQueue, Queue
-from trasto.infrastructure.aws_multiprocess.tarea_repository import TareaRepository
-from trasto.infrastructure.aws_multiprocess.accion_repository import AccionRepository
-from trasto.infrastructure.aws_multiprocess.aws import get_queue, COMANDOS_QUEUE_NAME
+from trasto.infrastructure.awsmultiprocess.tarea_repository import TareaRepository
+from trasto.infrastructure.awsmultiprocess.accion_repository import AccionRepository
+from trasto.infrastructure.awsmultiprocess.aws import get_queue, COMANDOS_QUEUE_NAME
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (Comando, ComandoNuevaAccion,
                                    ComandoNuevaTarea,
@@ -60,18 +60,27 @@ class ComandoRepository(ComandoRepositoryInterface):
                 WaitTimeSeconds=POLL_TIME,
                 AttributeNames=['MessageDeduplicationId', 'MessageGroupId']
             )
+
             for cc in cmd:
                 c = json.loads(cc.body)
+                cc.delete()
                 if c['clase'] == "ComandoNuevaTarea":
-                    yield (ComandoRepository.deserialize_comando_nueva_tarea(c), cc)
+                    yield ComandoRepository.deserialize_comando_nueva_tarea(c)
                 if c['clase'] == "ComandoNuevaAccion":
-                    yield (ComandoRepository.deserialize_comando_nueva_accion(c), cc)
+                    yield ComandoRepository.deserialize_comando_nueva_accion(c)
+
+
 
 
 
     def send_comando(self, comando):
-        self.comandos.send_message(
-            MessageBody=ComandoRepository.serialize(comando),
-            MessageGroupId=MESSAGE_GROUP_ID,
-            MessageDeduplicationId=str(comando.idd))
-        self.logger.debug("Comando enviado")
+        try:
+            self.logger.debug(f"Intentamos enviar el comando::: {comando}")
+            response = self.comandos.send_message(
+                MessageBody=ComandoRepository.serialize(comando),
+                MessageGroupId=MESSAGE_GROUP_ID,
+                MessageDeduplicationId=str(comando.idd))
+            
+            self.logger.debug(f"Comando enviado: [{comando}], messageid: [{response['MessageId']}]")
+        except Exception as ex:
+            self.logger.error(f"Error intentando enviar un comando: {ex}")

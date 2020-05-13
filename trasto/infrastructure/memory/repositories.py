@@ -30,7 +30,7 @@ class LoggerRepository:
 
         logger.addHandler(handler)
         formatter = logging.Formatter(
-            "%(asctime)s %(levelname)7s %(threadName)10s %(lname)22s %(filename)12s:%(lineno)s: %(message)s")
+            " %(asctime)s %(levelname)7s %(threadName)10s %(lname)22s: %(message)s")
 
         handler.setFormatter(formatter)
     
@@ -79,19 +79,3 @@ class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
         return self.humor >= LIMITE_HUMOR_EUFORICO
 
         
-class ComandoRepository(ComandoRepositoryInterface):
-
-    def __init__(self):
-        self.logger = LoggerRepository("ComandoRepository")
-
-    def next_commando(self):
-        nombre = input('Introduce un numero:')
-        #nombre = "5"
-        yield ComandoNuevaTarea(
-            idd=Idd(Idefier()),
-            tarea=Tarea(
-                idd=Idd(Idefier()),
-                nombre=nombre,
-                accion=Accion(Idd(Idefier()), "accion", "script", TipoAccion("normal")),
-                prioridad=Prioridad(1)
-            ))

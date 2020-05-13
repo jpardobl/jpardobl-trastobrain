@@ -1,6 +1,6 @@
 
 
-from trasto.infrastructure.aws_multiprocess.evento_repository import \
+from trasto.infrastructure.awsmultiprocess.evento_repository import \
     EventoRepository
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.events import (AccionTerminada, EstadoHumorCambiado,
@@ -38,8 +38,8 @@ def test_evento_accion_terminada():
 
     assert evento_repo.pub_event(evento=evento)
     
-    logger.debug("Buwcamos evetgnos")
-    for ev, msg in evento_repo.subscribe_event():
+    logger.debug("Buscamos eventos")
+    for ev in evento_repo.subscribe_event():
         try:
             logger.debug("ha llegado")
             assert ev.idd == evento.idd
@@ -48,7 +48,7 @@ def test_evento_accion_terminada():
         except Exception as ex:
             print(ex)
         finally:
-            msg.delete()
+
             break
 
 
@@ -63,7 +63,7 @@ def test_evento_estado_humor_cambiado():
 
     assert evento_repo.pub_event(evento=evento)
 
-    for ev, msg in evento_repo.subscribe_event():
+    for ev in evento_repo.subscribe_event():
         try:
             assert ev.idd == evento.idd
             assert ev.nuevo_estado_humor == 300
@@ -71,7 +71,7 @@ def test_evento_estado_humor_cambiado():
             print(ex)
             
         finally:
-            msg.delete()
+            
             break
 
     
@@ -86,12 +86,12 @@ def test_evento_nueva_accion_creada():
 
     assert evento_repo.pub_event(evento)
 
-    for ev, msg in evento_repo.subscribe_event():
+    for ev in evento_repo.subscribe_event():
         try:
             assert ev.idd == evento.idd
             assert ev.accion_idd == evento.accion_idd
         except Exception as ex:
             print(ex)
         finally:
-            msg.delete()
+            
             break

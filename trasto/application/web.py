@@ -2,27 +2,31 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 from aiohttp import web
-
-from trasto.infrastructure.asyncio.repositories import (
-    AccionRepository, ComandoRepository, EventoRepository,
-    TareaRepository)
-from trasto.infrastructure.asyncio.services import brain
+from trasto.infrastructure.asyncio.repositories import (AccionRepository,
+                                                        ComandoRepository,
+                                                        EventoRepository,
+                                                        TareaRepository)
 from trasto.infrastructure.memory.repositories import (EstadoDeHumorRepository,
-                                                       Idefier)
+                                                       Idefier, LoggerRepository)
 from trasto.model.commands import ComandoNuevaAccion, ComandoNuevaTarea
 from trasto.model.entities import Accion, Tarea, TipoAccion
 from trasto.model.value_entities import Idd
 
+from services import brain
+
 accion_repo = AccionRepository()
 
-async def get_service(request):
+logger = LoggerRepository('web')
 
+async def get_service(request):
+    logger.debug("Solicitada get_service")
     return web.json_response({
         "service": "trastobrain", 
     })
 
 
 async def new_task(request):
+    logger.debug("Solicitada new_task")
     comando_repo = ComandoRepository()
     r = await request.json()
 
@@ -37,6 +41,7 @@ async def new_task(request):
             )
         )
     )
+    logger.debug("Se ha enviado el comando new_task")
     return web.json_response({
         "msg": "solicitud recibida",
         "request": r},
@@ -44,6 +49,7 @@ async def new_task(request):
 
 
 async def new_accion(request):
+    logger.debug("Solicitada new_accion")
     comando_repo = ComandoRepository()
     r = await request.json()
     
@@ -62,8 +68,8 @@ async def new_accion(request):
 
 
 async def get_all_acciones(request):
+    logger.debug("Solicitada get_all_acciones")
     acciones = accion_repo.get_all_json()
-    type(acciones)
     return web.json_response({
         "acciones": acciones
     })
@@ -88,8 +94,10 @@ class ScraperServer:
         humor_repo = EstadoDeHumorRepository()
         tarea_repo = TareaRepository()
         comando_repo = ComandoRepository()
-        id_repo = Idefier()
+        
         evento_repo = EventoRepository()
+        id_repo = Idefier()
+
 
         app['brain'] = self.loop.create_task(brain(
             thread_executor=t_executor,
@@ -114,11 +122,12 @@ class ScraperServer:
         return app
 
 
-    def run_app(self):
+    def run_app(self, mono=True):
         loop = self.loop
         app = loop.run_until_complete(self.create_app())
-        app.on_startup.append(self.start_background_tasks)
-        #app.on_cleanup.append(self.cleanup_background_tasks)
+        if mono:
+            app.on_startup.append(self.start_background_tasks)
+        
         web.run_app(app, host=self.host, port=self.port)
         # TODO gestionar el apagado y liberado de recursos
 

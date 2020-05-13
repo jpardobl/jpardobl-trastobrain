@@ -1,7 +1,7 @@
 
-from trasto.infrastructure.aws_multiprocess.tarea_repository import (
+from trasto.infrastructure.awsmultiprocess.tarea_repository import (
     TareaRepository)
-#from trasto.infrastructure.aws_multiprocess.aws import TABLE_ACCIONES_NAME
+#from trasto.infrastructure.awsmultiprocess.aws import TABLE_ACCIONES_NAME
 from trasto.infrastructure.memory.repositories import Idefier
 from trasto.model.commands import (Comando, ComandoNuevaAccion,
                                    ComandoNuevaTarea)
@@ -31,22 +31,22 @@ def test_enviar_recibir():
     tarea_repo.append(task_alta)
 
     count = 0
-    for taskc, msg in tarea_repo.next_tarea():
+    for taskc in tarea_repo.next_tarea():
         assert not taskc is None
         assert isinstance(taskc, Tarea)
         assert taskc.nombre == task_alta.nombre
         assert taskc.prioridad == task_alta.prioridad
-        msg.delete()
+        
         count = count + 1
         break
     assert count == 1
 
-    for taskc, msg in tarea_repo.next_tarea():
+    for taskc in tarea_repo.next_tarea():
         assert not taskc is None
         assert isinstance(taskc, Tarea)
         assert taskc.nombre == task_baja.nombre
         assert taskc.prioridad == task_baja.prioridad
-        msg.delete()
+        
         count = count + 1
         break
     assert count == 2

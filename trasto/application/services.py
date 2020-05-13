@@ -7,7 +7,7 @@ import traceback
 from trasto.infrastructure.asyncio.repositories import AccionNotFoundException
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
-                                   ComandoRepositoryInterface, ComandoNuevaTareaLibreAlbedrio)
+                                   ComandoRepositoryInterface)
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
                                    CodigoResultado,
                                    EstadoHumorRepositoryInterface,
@@ -20,6 +20,7 @@ from trasto.model.service_ejecutor import EjecutorInterface
 from trasto.model.service_sensor import SensorInterface
 from trasto.model.value_entities import (Idd, IdefierInterface, Prioridad,
                                          TipoAccion)
+
 
 
 class CommandNotImplemented(Exception):
@@ -82,7 +83,7 @@ class Ejecutor(EjecutorInterface):
             accionid = tarea.accionid
             idd = Idd(idefier=id_repo, idd_str=accionid)
             self.logger.debug(f"Intentamos ejecutar accionid: {idd}, repo: {accion_repo}")
-            accion = accion_repo.get_acciones_by_id(idd)
+            accion = accion_repo.get_accion_by_id./(idd)
             self.logger.debug(f"Ejecutamos: {accion} (dormimos 10s)")
 
             #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
@@ -103,7 +104,7 @@ class Ejecutor(EjecutorInterface):
                 idd=Idd(idefier=Idefier()), 
                 tarea_idd=tarea.idd,
                 resultado=resultado)
-        except AccionNotFoundException as ex:
+        except AccionNotFoundException:
             resultado = ResultadoAccion(
                 codigo=CodigoResultado(codigo=CodigoResultado.MAL_RESULTADO),
                 msg="No existe la tarea"
@@ -121,22 +122,24 @@ class Comander(ComanderInterface):
         self.logger = LoggerRepository('comander')
 
     def enqueue_task(self, tarea: Tarea, tarea_repo: TareaRepositoryInterface):
-        self.logger.debug(f"encolando tarea {tarea}")
+        self.logger.debug(f"Encolando tarea {tarea}")
         tarea_repo.append(tarea)
 
     def listen_to_command(self, repo_command: ComandoRepositoryInterface, tarea_repo: TareaRepositoryInterface, accion_repo: AccionRepositoryInterface, evento_repo: EventRepositoryInterface):
         self.logger.debug("Escuchando por nuevo comando")
-        while True:
-            #hay que utilizar repo_command como un generador
+        #while True:   
+        for cmd in repo_command.next_comando():   
             try:
-                cmd = repo_command.next_comando()
+                #cmd = repo_command.next_comando()
                 if isinstance(cmd, ComandoNuevaTarea):
+                    self.logger.debug("Recibido comando de tipo ComandoNuevaTarea")
                     self.enqueue_task(cmd.tarea, tarea_repo)
+                    self.logger.debug("Escuchando por nuevo comando")
                     continue
                 if isinstance(cmd, ComandoNuevaAccion):
-                    self.logger.debug("El comando es crear una accion")
+                    self.logger.debug("Recibido comando de tipo ComandoNuevaAccion")
                     accion_repo.append_accion(accion=cmd.accion, evento_repo=evento_repo)
-
+                    self.logger.debug("Escuchando por nuevo comando")
                     continue
                 raise CommandNotImplemented(cmd)
 
@@ -144,7 +147,7 @@ class Comander(ComanderInterface):
                 self.logger.error(ex)
                 traceback.print_exc()
         
-
+"""
 async def librealbedrio(comando_repo, humor_repo):
     logger = LoggerRepository('librealbedrio')
     while True:
@@ -161,7 +164,7 @@ async def librealbedrio(comando_repo, humor_repo):
         cmd = ComandoNuevaTareaLibreAlbedrio(idd=Idd(Idefier))
         await comando_repo.send_comando(cmd)
         logger.debub("Acabamos de enviar un comando de libre albedrio")
-
+"""
 
 
 async def brain(thread_executor, id_repo, tarea_repo, comando_repo, humor_repo, accion_repo, evento_repo):
@@ -181,4 +184,4 @@ async def brain(thread_executor, id_repo, tarea_repo, comando_repo, humor_repo, 
         pass
 
     except Exception as mgr_ex:
-        logger.error(mgr_ex)
+        logger.error(f"Excecion en brain: {mgr_ex}")

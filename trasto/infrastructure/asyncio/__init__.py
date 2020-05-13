@@ -14,15 +14,15 @@ class QueueMorph(queue.Queue):
                 return self.get_nowait()
             except queue.Empty:
                 await asyncio.sleep(self.timeout)
-            except Exception as E:
-                raise
+            except Exception as e:
+                raise e
 
     async def aput(self,data):
         while True:
             try:
                 return self.put_nowait(data)
             except queue.Full:
-                print(f'{self.me} Queue full on put..')
+                
                 await asyncio.sleep(self.timeout)
-            except Exception as E:
-                raise
+            except Exception as e:
+                raise e

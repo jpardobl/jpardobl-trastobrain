@@ -59,7 +59,6 @@ class CodigoResultado:
 
 class ResultadoAccion:
     def __init__(self, codigo: CodigoResultado, msg: str):
-        print(type(codigo))
         self._codigo = codigo
         self._msg = msg
 

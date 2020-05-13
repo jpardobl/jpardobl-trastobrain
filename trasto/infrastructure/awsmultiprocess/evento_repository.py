@@ -1,7 +1,7 @@
 
 import json
 
-from trasto.infrastructure.aws_multiprocess.aws import (EVENTOS_QUEUE_NAME,
+from trasto.infrastructure.awsmultiprocess.aws import (EVENTOS_QUEUE_NAME,
                                                         get_queue)
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.events import (AccionTerminada, EstadoHumorCambiado,
@@ -108,7 +108,8 @@ class EventoRepository(EventRepositoryInterface):
                     if cc is None:
                         break
                     c = json.loads(cc.body)
-                    yield EventoRepository.from_json(c), cc
+                    cc.delete()
+                    yield EventoRepository.from_json(c)
  
             except Exception as ex:
                 self.logger.error(ex)

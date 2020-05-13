@@ -3,9 +3,9 @@ import json
 from trasto.infrastructure.memory.repositories import (Idd, Idefier,
                                                        LoggerRepository)
 from trasto.model.entities import Tarea, TareaRepositoryInterface
-from trasto.infrastructure.aws_multiprocess.aws import get_queue, TAREAS_NORMALES_QUEUE_NAME, TAREAS_PRIORITARIAS_QUEUE_NAME
+from trasto.infrastructure.awsmultiprocess.aws import get_queue, TAREAS_NORMALES_QUEUE_NAME, TAREAS_PRIORITARIAS_QUEUE_NAME
 from trasto.model.value_entities import Prioridad
-from trasto.infrastructure.aws_multiprocess.aws import get_sqs_client
+from trasto.infrastructure.awsmultiprocess.aws import get_sqs_client
 
 MESSAGE_GROUP_ID = "1"
 MAX_NUMBER_OF_MESSAGES = 1
@@ -66,22 +66,25 @@ class TareaRepository(TareaRepositoryInterface):
             msg_alta = self._next_tarea_alta()
             if msg_alta.count:
                 for cc_alta in msg_alta:
-                    yield TareaRepository.deserialize(json.loads(cc_alta.body)), cc_alta
+                    cc_alta.delete()
+                    yield TareaRepository.deserialize(json.loads(cc_alta.body))
             msg_baja = self._next_tarea_baja()
             if msg_baja.count:
                 for cc_baja in msg_baja:
                     msg_alta = self._next_tarea_alta()
                     if msg_alta.count:
                         for cc_alta in msg_alta:
-                            yield TareaRepository.deserialize(json.loads(cc_alta.body)), cc_alta
-                    yield TareaRepository.deserialize(json.loads(cc_baja.body)), cc_baja
+                            cc_alta.delete()
+                            yield TareaRepository.deserialize(json.loads(cc_alta.body))
+                    cc_baja.delete()
+                    yield TareaRepository.deserialize(json.loads(cc_baja.body))
             
                 
 
     def append(self, tarea: Tarea):
         cola = self.tareas_prio if tarea.prioridad == Prioridad.ALTA else self.tareas_norm
 
-        ret = cola.send_message(
+        cola.send_message(
             MessageBody=TareaRepository.serialize(tarea),
             MessageGroupId=MESSAGE_GROUP_ID,
             MessageDeduplicationId=str(tarea.idd))

@@ -3,7 +3,7 @@ import json
 
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
-from trasto.infrastructure.aws_multiprocess.aws import \
+from trasto.infrastructure.awsmultiprocess.aws import \
     get_dynamodb_acciones_table
 from trasto.infrastructure.memory.repositories import (Idd, Idefier,
                                                        LoggerRepository)
@@ -35,6 +35,7 @@ class AccionRepository(AccionRepositoryInterface):
     
     @staticmethod
     def to_json(accion: Accion) -> dict:
+        print(accion)
         return {
             "idd": str(accion.idd),
             "nombre": accion.nombre,
@@ -63,7 +64,7 @@ class AccionRepository(AccionRepositoryInterface):
                 yield AccionRepository.deserialize(i)
 
     def get_all(self):
-        return tuple(a for a in self.acciones.query())
+        return tuple(AccionRepository.deserialize(a) for a in self.acciones.scan()['Items'])
 
 
     def get_accion_by_id(self, idd: Idd):
@@ -117,4 +118,4 @@ class AccionRepository(AccionRepositoryInterface):
 
 
     def get_all_json(self):
-        return tuple(json.loads(AccionRepository.to_json(accion)) for accion in self.get_all())
+        return tuple(AccionRepository.to_json(accion) for accion in self.get_all())

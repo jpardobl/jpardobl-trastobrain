@@ -1,5 +1,5 @@
 
-from trasto.infrastructure.aws_multiprocess.repositories import (
+from trasto.infrastructure.awsmultiprocess.comando_repository import (
     COMANDOS_QUEUE_NAME, ComandoRepository)
 from trasto.infrastructure.memory.repositories import Idefier
 from trasto.model.commands import (Comando, ComandoNuevaAccion,
@@ -23,11 +23,10 @@ def test_comando_nueva_accion():
 
     comando_repo.send_comando(cna)
     count = 0
-    for ccna, msg in comando_repo.next_comando():
+    for ccna in comando_repo.next_comando():
         assert not ccna is None
         assert isinstance(ccna, ComandoNuevaAccion)
         assert ccna.accion.nombre == "nombreaccion"
-        msg.delete()
         count = count + 1
         break
     assert count == 1
@@ -62,10 +61,10 @@ def test_comando_nueva_tarea():
     comando_repo.send_comando(cnt_baja)
 
     count = 0
-    for ccnt, msg in comando_repo.next_comando():
+    for ccnt in comando_repo.next_comando():
         assert isinstance(ccnt, ComandoNuevaTarea)
         assert ccnt.tarea.nombre in ("tareabaja", "tareaalta")
-        msg.delete()
+        print(f"vamos por contador: {count}")
         count = count + 1
         if count == 2:
             break

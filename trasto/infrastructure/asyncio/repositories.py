@@ -2,7 +2,7 @@ import json
 from queue import Empty, Full, PriorityQueue, Queue
 
 from trasto.infrastructure.asyncio import QueueMorph
-from trasto.infrastructure.memory.repositories import LoggerRepository,Idefier
+from trasto.infrastructure.memory.repositories import LoggerRepository, Idefier
 from trasto.model.commands import ComandoRepositoryInterface
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
                                    Prioridad, Tarea, TareaRepositoryInterface)
@@ -14,6 +14,7 @@ QUEUE_TIMEOUT = 10
 tareas = PriorityQueue(maxsize=10)
 comandos = QueueMorph()
 tareas_para_ejecutar = Queue()
+#TODO quitar la cola resultados_accion porque ya se usa la de eventos
 resultados_accion = Queue()
 eventos = Queue()
 
@@ -72,7 +73,9 @@ class ComandoRepository(ComandoRepositoryInterface):
         while True:
             try:
                 self.logger.debug("Esperamos por nuevo comando")
-                return comandos.get()
+                c = comandos.get()
+                self.logger.debug("Llego un comando")
+                yield c
             except Empty:
                 pass
 
