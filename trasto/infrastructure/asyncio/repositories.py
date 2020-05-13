@@ -1,6 +1,7 @@
 import json
 from queue import Empty, Full, PriorityQueue, Queue
 
+from trasto.infrastructure import AccionNotFoundError
 from trasto.infrastructure.asyncio import QueueMorph
 from trasto.infrastructure.memory.repositories import LoggerRepository, Idefier
 from trasto.model.commands import ComandoRepositoryInterface
@@ -104,7 +105,7 @@ class AccionRepository(AccionRepositoryInterface):
             self.logger.debug(f"Miramos si esta accion {accion} corresponde con id: {idd}")
             if accion.idd == idd:
                 return accion
-        raise AccionNotFoundException(f"idd={idd}")
+        raise AccionNotFoundError(f"idd={idd}")
 
     def get_acciones_buen_humor(self):
         return (a for a in self.get_acciones_by_type(TipoAccion(TipoAccion.BUEN_HUMOR)))

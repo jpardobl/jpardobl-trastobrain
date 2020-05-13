@@ -33,6 +33,7 @@ class AccionTerminada(Evento):
         super().__init__(idd)
         self._tarea_idd = tarea_idd
         if isinstance(resultado, dict):
+            print(f"Clonstruyendo evento Accion Terminada, tenemos resultado: {resultado}")
             self._resultado = ResultadoAccion(**resultado)
         else:
             self._resultado = resultado

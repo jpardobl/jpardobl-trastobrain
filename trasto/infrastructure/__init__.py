@@ -1,0 +1,4 @@
+
+
+class AccionNotFoundError(Exception):
+    pass

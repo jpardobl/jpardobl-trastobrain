@@ -18,8 +18,7 @@ class Idd:
         return self._id     
 
     def __eq__(self, other):
-        
-        return f"{self}" == f"{other}"
+        return str(self) == str(other)
 
     def __repr__(self):
         return f"{self.id}"
@@ -51,7 +50,7 @@ class CodigoResultado:
         return self._codigo
 
     def __eq__(self, other):
-        return self.codigo == other.codigo
+        return str(self) == str(other)
 
     def __str__(self):
         return "BIEN" if self.codigo == self.BUEN_RESULTADO else "MAL"
@@ -77,7 +76,7 @@ class ResultadoAccion:
         return "{self}"
 
     def __str__(self):
-        return f"Resultado[codigo: : {self._codigo}; msg: {self._msg}"
+        return f"Resultado[codigo: : {self._codigo}; msg: {self._msg}]"
 
 class TipoAccion:
     BUEN_HUMOR = "buenhumor"

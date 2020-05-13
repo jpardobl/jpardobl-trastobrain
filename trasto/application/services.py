@@ -4,7 +4,7 @@ import random
 import time
 import traceback
 
-from trasto.infrastructure.asyncio.repositories import AccionNotFoundException
+from trasto.infrastructure import AccionNotFoundError
 from trasto.infrastructure.memory.repositories import Idefier, LoggerRepository
 from trasto.model.commands import (ComandoNuevaAccion, ComandoNuevaTarea,
                                    ComandoRepositoryInterface)
@@ -39,7 +39,7 @@ class Sensor(SensorInterface):
             self.logger.debug("Escuchando a resultado de tarea")
             for evento in evento_repo.subscribe_event():
                 if isinstance(evento, AccionTerminada):
-                    self.logger.debug(f"Se ha terminado la accion: {evento.tarea_idd}, resultado: {evento.resultado}")
+                    self.logger.debug(f"Se ha terminado la tarea: {evento.tarea_idd}, resultado: {evento.resultado}")
                     self.update_humor_from_task_result(evento.resultado, self.humor_repo, evento_repo)
                     self.logger.debug("Escuchando a resultado de tarea")
         except Exception as ex:
@@ -82,14 +82,14 @@ class Ejecutor(EjecutorInterface):
         try:
             accionid = tarea.accionid
             idd = Idd(idefier=id_repo, idd_str=accionid)
-            self.logger.debug(f"Intentamos ejecutar accionid: {idd}, repo: {accion_repo}")
-            accion = accion_repo.get_accion_by_id./(idd)
+            self.logger.debug(f"Intentamos ejecutar ---- accionid: {idd}, repo: {accion_repo}")
+            accion = accion_repo.get_accion_by_id(idd)
             self.logger.debug(f"Ejecutamos: {accion} (dormimos 10s)")
 
             #TODO implementar realmente la ejecucion, ahora solo hay un ejemplo
             time.sleep(10)
             self.logger.debug("despertamos, tarea ejecutada")
-            resultado = None
+            
             if int(tarea.nombre) > 0:
                 resultado = ResultadoAccion(
                     codigo=CodigoResultado(codigo=CodigoResultado.BUEN_RESULTADO),
@@ -104,17 +104,23 @@ class Ejecutor(EjecutorInterface):
                 idd=Idd(idefier=Idefier()), 
                 tarea_idd=tarea.idd,
                 resultado=resultado)
-        except AccionNotFoundException:
+            evento_repo.pub_event(evento=evento)
+        
+        except AccionNotFoundError as exx:
+
             resultado = ResultadoAccion(
                 codigo=CodigoResultado(codigo=CodigoResultado.MAL_RESULTADO),
-                msg="No existe la tarea"
+                msg=f"No existe la tarea {exx}"
             )
             evento = AccionTerminada(
                 idd=Idd(idefier=Idefier()), 
                 tarea_idd=tarea.idd,
                 resultado=resultado)
-        finally:
             evento_repo.pub_event(evento=evento)
+        except Exception as ekk:
+            self.logger.error(f"Error no identificado: {ekk}")
+
+            
         
 
 class Comander(ComanderInterface):

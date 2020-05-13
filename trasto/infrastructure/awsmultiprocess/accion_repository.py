@@ -1,6 +1,7 @@
 
 import json
 
+from trasto.infrastructure import AccionNotFoundError
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from trasto.infrastructure.awsmultiprocess.aws import \
@@ -11,9 +12,6 @@ from trasto.model.entities import Accion, AccionRepositoryInterface
 from trasto.model.events import EventRepositoryInterface, NuevaAccionCreada
 from trasto.model.value_entities import Idd, TipoAccion
 
-
-class AccionNotFoundException(Exception):
-    pass
 
 
 class AccionRepository(AccionRepositoryInterface):
@@ -76,7 +74,7 @@ class AccionRepository(AccionRepositoryInterface):
             return None
         else:
             if not 'Item' in response:
-                raise AccionNotFoundException(idd)
+                raise AccionNotFoundError(idd)
 
             return AccionRepository.deserialize(response['Item'])
 

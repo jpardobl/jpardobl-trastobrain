@@ -72,9 +72,9 @@ def get_dynamodb_acciones_table():
 
 def create_queues():
     create_fifo_queue(EVENTOS_QUEUE_NAME)
-    #create_fifo_queue(TAREAS_NORMALES_QUEUE_NAME)
-    #create_fifo_queue(TAREAS_PRIORITARIAS_QUEUE_NAME)
-    #create_fifo_queue(COMANDOS_QUEUE_NAME)
+    create_fifo_queue(TAREAS_NORMALES_QUEUE_NAME)
+    create_fifo_queue(TAREAS_PRIORITARIAS_QUEUE_NAME)
+    create_fifo_queue(COMANDOS_QUEUE_NAME)
 
 if __name__ == "__main__":
     create_queues()
