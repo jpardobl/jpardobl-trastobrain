@@ -41,7 +41,7 @@ class Sensor(SensorInterface):
                 if isinstance(evento, AccionTerminada):
                     self.logger.debug(f"Se ha terminado la tarea: {evento.tarea_idd}, resultado: {evento.resultado}")
                     self.update_humor_from_task_result(evento.resultado, self.humor_repo, evento_repo)
-                    self.logger.debug("Escuchando a resultado de tarea")
+                self.logger.debug("Escuchando por un resultado de tarea")
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
@@ -51,7 +51,7 @@ class Sensor(SensorInterface):
         try:
             print(resultado)
             humor_repo.mejora() if resultado.is_good() else humor_repo.empeora()
-            self.logger.debug("el humor ha cambiado a : {}".format(humor_repo.que_tal()))
+            self.logger.debug("El humor ha cambiado a : {}".format(humor_repo.que_tal()))
             evento_repo.pub_event(EstadoHumorCambiado(
                 idd=Idd(Idefier()),
                 nuevo_estado_humor=humor_repo.que_tal()))
@@ -68,6 +68,7 @@ class Ejecutor(EjecutorInterface):
         try:
             self.logger.debug("Escuchando por nueva tarea")
             for tarea in tarea_repo.next_tarea():
+
                 self.ejecuta_tarea(tarea=tarea, id_repo=id_repo, evento_repo=evento_repo, accion_repo=accion_repo)
                 self.logger.debug("Escuchando por nueva tarea")
         except Exception as ex:
@@ -81,6 +82,7 @@ class Ejecutor(EjecutorInterface):
         resultado = None
         try:
             accionid = tarea.accionid
+            print(f"ha llegado el accion id: {accionid}")
             idd = Idd(idefier=id_repo, idd_str=accionid)
             self.logger.debug(f"Intentamos ejecutar ---- accionid: {idd}, repo: {accion_repo}")
             accion = accion_repo.get_accion_by_id(idd)
@@ -105,9 +107,9 @@ class Ejecutor(EjecutorInterface):
                 tarea_idd=tarea.idd,
                 resultado=resultado)
             evento_repo.pub_event(evento=evento)
-        
+            
         except AccionNotFoundError as exx:
-
+            self.logger.error(f"No se ha encontrado la Accion {exx}")
             resultado = ResultadoAccion(
                 codigo=CodigoResultado(codigo=CodigoResultado.MAL_RESULTADO),
                 msg=f"No existe la tarea {exx}"

@@ -99,7 +99,7 @@ class AccionRepository(AccionRepositoryInterface):
         return tuple(a for a in self.acciones)
 
 
-    def get_acciones_by_id(self, idd: Idd):
+    def get_accion_by_id(self, idd: Idd):
         self.logger.debug(f"Buscamos accion con la idd: {idd}")
         for accion in self.acciones:
             self.logger.debug(f"Miramos si esta accion {accion} corresponde con id: {idd}")

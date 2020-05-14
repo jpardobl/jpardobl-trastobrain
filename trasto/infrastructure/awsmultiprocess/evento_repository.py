@@ -10,7 +10,7 @@ from trasto.model.events import (AccionTerminada, EstadoHumorCambiado,
 
 MESSAGE_GROUP_ID = "1"
 MAX_NUMBER_OF_MESSAGES = 1
-POLL_TIME = 10
+POLL_TIME = 5
 
 class EventoNotImplemented(Exception):
     pass
@@ -103,7 +103,7 @@ class EventoRepository(EventRepositoryInterface):
                     WaitTimeSeconds=POLL_TIME,
                     AttributeNames=['MessageDeduplicationId', 'MessageGroupId']
                 )
-                self.logger.debug(f"Han llegado eventos: {msg}")
+                #self.logger.debug(f"Han llegado eventos: {msg}")
                 for cc in msg:
                     if cc is None:
                         break

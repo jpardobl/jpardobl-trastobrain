@@ -9,7 +9,7 @@ from trasto.infrastructure.awsmultiprocess.aws import get_sqs_client
 
 MESSAGE_GROUP_ID = "1"
 MAX_NUMBER_OF_MESSAGES = 1
-POLL_TIME = 10
+POLL_TIME = 2
 
 class TareaRepository(TareaRepositoryInterface):
 
@@ -65,18 +65,25 @@ class TareaRepository(TareaRepositoryInterface):
             self.logger.debug("Esperamos por nueva tarea")
             msg_alta = self._next_tarea_alta()
             if msg_alta.count:
+                #self.logger.debug("hay tareas alta 1")
                 for cc_alta in msg_alta:
                     cc_alta.delete()
+                    #self.logger.debug("Devolvemos tarea alta 1")
                     yield TareaRepository.deserialize(json.loads(cc_alta.body))
+            
             msg_baja = self._next_tarea_baja()
             if msg_baja.count:
+                #self.logger.debug("Hay tareas baja")
                 for cc_baja in msg_baja:
                     msg_alta = self._next_tarea_alta()
                     if msg_alta.count:
+                        #self.logger.debug("Hay rtarea alta 2")
                         for cc_alta in msg_alta:
                             cc_alta.delete()
+                            #self.logger.debug("Devolvemos tarea alta 2")
                             yield TareaRepository.deserialize(json.loads(cc_alta.body))
                     cc_baja.delete()
+                    #self.logger.debug("Devolvemos tarea baja")
                     yield TareaRepository.deserialize(json.loads(cc_baja.body))
             
                 
