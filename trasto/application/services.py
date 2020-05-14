@@ -153,24 +153,6 @@ class Comander(ComanderInterface):
                 self.logger.error(ex)
                 traceback.print_exc()
         
-"""
-async def librealbedrio(comando_repo, humor_repo):
-    logger = LoggerRepository('librealbedrio')
-    while True:
-        rnd = random.randrange(10, 60)
-        logger.debug("Esperamos {rnd} para actuar")
-        await asyncio.sleep(rnd)
-        cmd = ComandoNuevaTareaLibreAlbedrio(idd=Idd(Idefier()))
-        humor = humor_repo.que_tal()
-        logger.debug(f"Hemos despertado, vemos que estamos con el humor: {humor}")
-        acciones = ()
-        if not humor_repo.estas_enfadado() and not humor_repo.estas_euforico():
-            logger.debug("No hacemos nada porque ni estamos euforicos, ni enfadados")
-            continue
-        cmd = ComandoNuevaTareaLibreAlbedrio(idd=Idd(Idefier))
-        await comando_repo.send_comando(cmd)
-        logger.debub("Acabamos de enviar un comando de libre albedrio")
-"""
 
 
 async def brain(thread_executor, id_repo, tarea_repo, comando_repo, humor_repo, accion_repo, evento_repo):

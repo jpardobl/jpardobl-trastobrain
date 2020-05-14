@@ -1,4 +1,4 @@
-import uuid, json
+#import uuid, json
 
 from trasto.model.value_entities import (TipoAccion, 
     Prioridad, Idd, CodigoResultado, CambioHumor, ResultadoAccion)
@@ -28,8 +28,8 @@ class Tarea:
     def __str__(self):
         return f"Tarea[{self.nombre}], accion: {self.accionid}"
 
-    def __cmp__(self, other):
-        return cmp(self.prioridad, other.prioridad)
+    #def __cmp__(self, other):
+    #    return cmp(self.prioridad, other.prioridad)
 
 
 class EstadoHumorRepositoryInterface:
