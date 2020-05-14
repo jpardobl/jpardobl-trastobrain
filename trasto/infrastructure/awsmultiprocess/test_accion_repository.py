@@ -1,7 +1,7 @@
 
 import pytest
-from trasto.infrastructure.awsmultiprocess.accion_repository import (
-    AccionNotFoundException, AccionRepository)
+from trasto.infrastructure import AccionNotFoundError
+from trasto.infrastructure.awsmultiprocess.accion_repository import (AccionRepository)
 from trasto.infrastructure.awsmultiprocess.aws import \
     create_dynamodb_acciones_table
 from trasto.infrastructure.awsmultiprocess.evento_repository import \
@@ -33,7 +33,7 @@ def test_get_by_id():
         tipo=TipoAccion(nombre="malhumor")
     )
     
-    with pytest.raises(AccionNotFoundException): 
+    with pytest.raises(AccionNotFoundError): 
         acc = accion_repo.get_accion_by_id(a2.idd)
 
     acc = accion_repo.get_accion_by_id(a.idd)
