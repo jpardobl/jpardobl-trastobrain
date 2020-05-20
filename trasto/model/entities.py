@@ -17,7 +17,7 @@ class Accion:
         return f"Accion[nombre={self.nombre};tipo={self.tipo}]"
 
 class Tarea:
-    #TODO: Hacer que Tarea no use Accion, solo use su idd
+    
     def __init__(self, idd: Idd, nombre: str, accionid: Idd, prioridad: Prioridad, **parametros: dict):
         self.idd = idd
         self.nombre = nombre

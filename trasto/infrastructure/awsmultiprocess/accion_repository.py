@@ -66,6 +66,7 @@ class AccionRepository(AccionRepositoryInterface):
 
 
     def get_accion_by_id(self, idd: Idd):
+        
         try:
             self.logger.debug(f"Buscamos accion con la idd: {idd}")
             response = self.acciones.get_item(Key={'idd': str(idd)})

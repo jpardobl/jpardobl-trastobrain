@@ -85,6 +85,7 @@ class Ejecutor(EjecutorInterface):
             print(f"ha llegado el accion id: {accionid}")
             idd = Idd(idefier=id_repo, idd_str=accionid)
             self.logger.debug(f"Intentamos ejecutar ---- accionid: {idd}, repo: {accion_repo}")
+            
             accion = accion_repo.get_accion_by_id(idd)
             self.logger.debug(f"Ejecutamos: {accion} (dormimos 10s)")
 
@@ -145,6 +146,9 @@ class Comander(ComanderInterface):
                     self.logger.debug("Escuchando por nuevo comando")
                     continue
                 if isinstance(cmd, ComandoNuevaAccion):
+                    #TODO la persistencia de la Acción debe ser llevada a cabo por el Aggregate Accion, que se ejecuta en el 
+                    # service Ejecutor. En el modo monoproceso no es tan importante, en el modo multiproceso (para garantizar 
+                    # la separación de bases de datos entre microservicios) si es relevante cambiar la responsabilidad
                     self.logger.debug("Recibido comando de tipo ComandoNuevaAccion")
                     accion_repo.append_accion(accion=cmd.accion, evento_repo=evento_repo)
                     self.logger.debug("Escuchando por nuevo comando")
