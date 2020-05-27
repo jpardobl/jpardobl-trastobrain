@@ -40,7 +40,7 @@ def test_comando_nueva_tarea():
         idd=Idd(Idefier()),
         tarea=Tarea(
             idd=Idd(Idefier()),
-            nombre="tareaalta",
+            nombre="Tareaalta",
             parametros="parametros",
             prioridad=1,
             accionid="accion"
@@ -51,7 +51,7 @@ def test_comando_nueva_tarea():
         idd=Idd(Idefier()),
         tarea=Tarea(
             idd=Idd(Idefier()),
-            nombre="tareabaja",
+            nombre="Tareabaja",
             parametros="parametros",
             prioridad=0,
             accionid="accion"
@@ -63,7 +63,7 @@ def test_comando_nueva_tarea():
     count = 0
     for ccnt in comando_repo.next_comando():
         assert isinstance(ccnt, ComandoNuevaTarea)
-        assert ccnt.tarea.nombre in ("tareabaja", "tareaalta")
+        assert ccnt.tarea.nombre in ("Tareabaja", "Tareaalta")
         print(f"vamos por contador: {count}")
         count = count + 1
         if count == 2:

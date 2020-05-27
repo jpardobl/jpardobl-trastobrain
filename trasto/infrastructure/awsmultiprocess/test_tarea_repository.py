@@ -14,14 +14,14 @@ def test_enviar_recibir():
     tarea_repo.purge_queue()
     task_baja = Tarea(
         idd=Idd(Idefier()),
-        nombre="tarea_baja",
+        nombre="Tarea_baja",
         accionid="accion_id",
         parametros={"param1": "hola"},
         prioridad=0
     )
     task_alta = Tarea(
         idd=Idd(Idefier()),
-        nombre="tarea_alta",
+        nombre="Tarea_alta",
         accionid="accion_id",
         parametros={"param1": "hola"},
         prioridad=1

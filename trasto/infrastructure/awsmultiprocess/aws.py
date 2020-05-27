@@ -4,12 +4,12 @@ import boto3
 AWS_REGION='eu-west-1'
 AWS_PROFILE='jpardo'
 
-TAREAS_NORMALES_QUEUE_NAME = "trastobrain_tareas_normales"
-TAREAS_PRIORITARIAS_QUEUE_NAME = "trastobrain_tareas_prioritarias"
-COMANDOS_QUEUE_NAME = "trastobrain_comandos"
-EVENTOS_QUEUE_NAME = "trastobrain_eventos"
+TAREAS_NORMALES_QUEUE_NAME = "trastobrain_tareas_normales_local"
+TAREAS_PRIORITARIAS_QUEUE_NAME = "trastobrain_tareas_prioritarias_local"
+COMANDOS_QUEUE_NAME = "trastobrain_comandos_local"
+EVENTOS_QUEUE_NAME = "trastobrain_eventos_local"
 
-TABLE_ACCIONES_NAME="trastobrain_accionews"
+TABLE_ACCIONES_NAME="trastobrain_acciones_local"
 KEY_SCHEMA_ACCIONES=[
     {
         'AttributeName': 'idd',
@@ -78,4 +78,4 @@ def create_queues():
 
 if __name__ == "__main__":
     create_queues()
-    #create_dynamodb_acciones_table()
+    create_dynamodb_acciones_table()

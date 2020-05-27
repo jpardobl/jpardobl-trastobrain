@@ -51,10 +51,10 @@ class Sensor(SensorInterface):
         try:
             print(resultado)
             humor_repo.mejora() if resultado.is_good() else humor_repo.empeora()
-            self.logger.debug("El humor ha cambiado a : {}".format(humor_repo.que_tal()))
+            self.logger.debug("El humor ha cambiado a : {}".format(humor_repo.como_estas()))
             evento_repo.pub_event(EstadoHumorCambiado(
                 idd=Idd(Idefier()),
-                nuevo_estado_humor=humor_repo.que_tal()))
+                nuevo_estado_humor=humor_repo.como_estas()))
         except Exception as ex:
             self.logger.error(ex)
             traceback.print_exc()
@@ -93,7 +93,8 @@ class Ejecutor(EjecutorInterface):
             time.sleep(10)
             self.logger.debug("despertamos, tarea ejecutada")
             
-            if int(tarea.nombre) > 0:
+            
+            if int(tarea.nombre[-1]) > 0:
                 resultado = ResultadoAccion(
                     codigo=CodigoResultado(codigo=CodigoResultado.BUEN_RESULTADO),
                     msg="la tarea ha ido bien"

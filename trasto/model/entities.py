@@ -1,7 +1,7 @@
 #import uuid, json
 
 from trasto.model.value_entities import (TipoAccion, 
-    Prioridad, Idd, CodigoResultado, CambioHumor, ResultadoAccion)
+    Prioridad, Idd, CodigoResultado, ResultadoAccion)
 
 
 #OBJECTS
@@ -19,11 +19,20 @@ class Accion:
 class Tarea:
     
     def __init__(self, idd: Idd, nombre: str, accionid: Idd, prioridad: Prioridad, **parametros: dict):
+        self.valida_nombre(nombre)
         self.idd = idd
         self.nombre = nombre
         self.accionid = accionid
         self.parametros = parametros
         self.prioridad = prioridad
+
+    def valida_nombre(self, nombre):
+
+        if len(nombre) < 3:
+            raise AttributeError("El nombre no es valido, tiene que tener al menos 3 caracteres")
+        if not nombre[0].isupper():
+            raise AttributeError("El nombre no es valido, la primera debe ser mayucula")
+
 
     def __str__(self):
         return f"Tarea[{self.nombre}], accion: {self.accionid}"
@@ -31,21 +40,38 @@ class Tarea:
     #def __cmp__(self, other):
     #    return cmp(self.prioridad, other.prioridad)
 
+class EstadoHumor:
+    def __init__(self, idd: Idd):
+        self._idd = idd
+        self._estado = 0
+
+    def mejora(self):
+        self._estado = self._estado + 1
+
+    def empeora(self):
+        self._estado = self._estado - 1
+
+    def como_estas(self):
+        if self.estado == 0:
+            return "Normal"
+        if self.estado > 2:
+            return "Muy bien"
+        if self.estado > 0:
+            return "Bien"
+        if self.estado < -2:
+            return "Muy mal"
+        if self.estado < 0:
+            return "Mal"
+
+    @property
+    def estado(self):
+        return int(self._estado)
 
 class EstadoHumorRepositoryInterface:
-    def mejora(self) -> None:
+    def guarda(self, estado: EstadoHumor) -> None:
         pass
 
-    def empeora(self) -> None:
-        pass
-
-    def que_tal(self) -> int:
-        pass
-
-    def estas_enfadado(self) -> bool:
-        pass
-
-    def estas_euforico(self) -> bool:
+    def emit_event_estado_humor_cambiado(self,  nuevo_estado: EstadoHumor)-> None:
         pass
 
 class AccionRepositoryInterface:
@@ -72,8 +98,7 @@ class AccionRepositoryInterface:
     
     def del_accion(self, accion: Accion) -> bool:
         pass
-
-
+    
 
 class TareaRepositoryInterface:
     def next_tarea(self) -> Tarea:

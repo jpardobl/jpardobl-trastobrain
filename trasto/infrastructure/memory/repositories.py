@@ -4,14 +4,9 @@ import uuid
 
 from trasto.model.commands import ComandoNuevaTarea, ComandoRepositoryInterface
 from trasto.model.entities import (Accion, AccionRepositoryInterface,
-                                   EstadoHumorRepositoryInterface, Idd, Tarea)
+                                   EstadoHumorRepositoryInterface, Idd, Tarea, EstadoHumor)
 from trasto.model.commands import ComandoRepositoryInterface
-from trasto.model.value_entities import CambioHumor, IdefierInterface, Prioridad
-
-HUMOR_INICIAL = 0
-
-LIMITE_HUMOR_EUFORICO = 10
-LIMITE_HUMOR_ENFADADO = -10
+from trasto.model.value_entities import IdefierInterface, Prioridad
 
 
 DEFAULT_LOG_LEVEL = logging.DEBUG
@@ -61,21 +56,16 @@ class Idefier(IdefierInterface):
 
 class EstadoDeHumorRepository(EstadoHumorRepositoryInterface):
     def __init__(self):
-        self.humor = HUMOR_INICIAL
+        self._humor = EstadoHumor(idd=Idefier())
 
     def mejora(self):
-        self.humor = self.humor + CambioHumor.HUMOR_MEJORA
+        self._humor.mejora()
 
     def empeora(self):
-        self.humor = self.humor + CambioHumor.HUMOR_EMPEORA
+        self._humor.empeora()
 
-    def que_tal(self):
-        return self.humor
+    def como_estas(self):
+        return self._humor.como_estas()
 
-    def estas_enfadado(self):
-        return self.humor <= LIMITE_HUMOR_ENFADADO
-
-    def estas_euforico(self):
-        return self.humor >= LIMITE_HUMOR_EUFORICO
 
         

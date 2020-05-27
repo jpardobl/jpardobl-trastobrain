@@ -28,17 +28,6 @@ class Idd:
 
 
 
-class CambioHumor:
-    HUMOR_MEJORA = 1
-    HUMOR_EMPEORA = -1
-    def __init__(self, cambio: int):
-        self._cambio = cambio
-
-    @property
-    def cambio(self):
-        return self._cambio
-
-
 class CodigoResultado:
     MAL_RESULTADO = 0
     BUEN_RESULTADO = 1
