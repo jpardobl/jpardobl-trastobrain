@@ -1,6 +1,6 @@
 
 
-# Simple brain for robotics. 
+# Simple brain for robotics.
 
 
 It is developed using a Domain Driven Design aproach and Onion Architecture.
@@ -38,4 +38,16 @@ pip install -r requirements.txt
 Execute the server from the command line (important to execute it from the base path of the project)
 ```
 scripts/start.sh
+```
+
+### How to build image and run container
+
+Build image:
+```
+docker build . -t trastobrain
+```
+
+Run container:
+```
+docker run -d -p 8080:8080 --name trastobrain trastobrain:latest
 ```
